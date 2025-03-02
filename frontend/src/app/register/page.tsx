@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function Register() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -18,7 +19,13 @@ export default function Register() {
       const res = await fetch("/api/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({
+          userName: username,
+          email: email,
+          password: password,
+          role: "user",
+          status: "active",
+        }),
       });
 
       if (!res.ok) {
@@ -43,6 +50,17 @@ export default function Register() {
           User Registration
         </h1>
         <form onSubmit={handleRegister} className="space-y-4">
+        <div>
+            <input
+              type="text"
+              id="username"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full p-3 rounded-md text-black"
+            />
+          </div>
           <div>
             <input
               type="text"

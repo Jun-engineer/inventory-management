@@ -23,7 +23,7 @@ func InitDB() (*gorm.DB, error) {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		// Fallback DSN for development (adjust as needed).
-		dsn = "host=localhost user=myuser password=mypassword dbname=attendance port=5432 sslmode=disable TimeZone=Asia/Tokyo"
+		dsn = "host=localhost user=myuser password=mypassword dbname=inventory port=5432 sslmode=disable TimeZone=Asia/Tokyo"
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -31,7 +31,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.Users{}); err != nil {
 		return nil, err
 	}
 
