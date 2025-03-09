@@ -16,7 +16,7 @@ export default function Register() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/register/", {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -34,7 +34,7 @@ export default function Register() {
       } else {
         setMessage("Registration successful! Redirecting to login page...");
         setTimeout(() => {
-          router.push("/login/");
+          router.push("/login");
         }, 1500);
       }
     } catch (error) {
@@ -96,7 +96,7 @@ export default function Register() {
         {message && <p className="mt-4 text-center">{message}</p>}
         <p className="mt-6 text-center">
           You already have an account?{" "}
-          <Link href="/login/">
+          <Link href="/login">
             <span className="text-blue-400 underline">Login here</span>
           </Link>
         </p>

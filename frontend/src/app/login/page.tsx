@@ -15,7 +15,7 @@ export default function LoginPage() {
   // If the user is already logged in, redirect to the dashboard page.
   useEffect(() => {
     if (session) {
-      router.push("/dashboard/");
+      router.push("/dashboard");
     }
   }, [session, router]);
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
       redirect: false,
       email: email,
       password: password,
-      callbackUrl: "/dashboard/",
+      callbackUrl: "/dashboard",
     });
 
     if (result && result.error) {
@@ -40,11 +40,11 @@ export default function LoginPage() {
 
   // Login with OAuth providers
   const handleGoogleLogin = async () => {
-    await signIn("google", { callbackUrl: "/dashboard/" });
+    await signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleGitHubLogin = async () => {
-    await signIn("github", { callbackUrl: "/dashboard/" });
+    await signIn("github", { callbackUrl: "/dashboard" });
   };
 
   return (
@@ -126,7 +126,7 @@ export default function LoginPage() {
           You do not have an account?
           <br />
           Please register your account{" "}
-          <Link href="/register/">
+          <Link href="/register">
             <span className="text-blue-400 underline">here</span>
           </Link>.
         </p>

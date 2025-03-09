@@ -1,121 +1,119 @@
 'use client';
 
-import { useState } from "react";
+import { useMenu } from "../context/MenuContext";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { menuOpen, setMenuOpen } = useMenu();
 
   const handleLogout = () => {
     setMenuOpen(false);
-    signOut({ callbackUrl: "/login/" });
+    signOut({ callbackUrl: "/login" });
   };
 
   return (
-    <div className="relative w-full">
-      <header className="relative py-4 px-4 max-w-5xl mx-auto">
-        {/* Title centered */}
-        <h1 className="absolute inset-0 flex justify-center items-center text-4xl font-bold pointer-events-none">
-          Inventory Management System
-        </h1>
-        {/* Menu button at right */}
-        <button
-          onClick={() => setMenuOpen((prev) => !prev)}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 focus:outline-none p-2 pointer-events-auto"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div>
+      {/* Fixed header with white background and bottom border separator */}
+      <header className="fixed top-0 left-0 w-full z-[60] bg-white border-b border-gray-300">
+        <div className="relative py-4">
+          <h1 className="text-4xl font-bold text-center pointer-events-none text-black">
+            <Link href="/dashboard">Inventory Management System</Link>
+          </h1>
+          <button
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 focus:outline-none p-4"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
       </header>
+
       {menuOpen && (
-        <nav className="absolute top-full right-4 w-48 md:w-56 bg-gray-500 bg-opacity-70 text-white p-4 shadow-lg rounded-md">
-          <ul className="divide-y divide-gray-400">
-            <li className="py-2">
-              <Link
-                href="/order#purchase/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Purchace Order
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/price#purchased-orders/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Purchase Order Price
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/order#sales/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Sales Order
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/price#sales-order/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Sales Order Price
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/products#stock/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Stock
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/products#edit/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Edit Products
-              </Link>
-            </li>
-            <li className="py-2">
-              <Link
-                href="/settings/"
-                onClick={() => setMenuOpen(false)}
-                className="block text-left"
-              >
-                Settings
-              </Link>
-            </li>
-            <li className="py-2">
-              <button
-                onClick={handleLogout}
-                className="block text-left"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </nav>
+        <>
+          {/* Overlay that greys out the entire page */}
+          <div
+            className="fixed inset-0 z-[50] bg-black opacity-50"
+            onClick={() => setMenuOpen(false)}
+          ></div>
+          {/* Menu panel with white background and black text */}
+          <nav
+            className="fixed left-0 top-16 z-[100] w-full sm:w-64 bg-white text-black p-4 shadow-lg sm:rounded-r-md border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ul className="divide-y divide-gray-300">
+              <li className="py-2">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Home
+                </Link>
+              </li>
+              <li className="py-2">
+                <Link
+                  href="/purchase"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Order
+                </Link>
+              </li>
+              <li className="py-2">
+                <Link
+                  href="/sales"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Sales
+                </Link>
+              </li>
+              <li className="py-2">
+                <Link
+                  href="/products"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Products
+                </Link>
+              </li>
+              <li className="py-2">
+                <Link
+                  href="/settings"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Settings
+                </Link>
+              </li>
+              <li className="py-2">
+                <button
+                  onClick={handleLogout}
+                  className="block text-left w-full"
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </>
       )}
+
+      {/* Spacer div to offset the content below the fixed header */}
+      <div className="pt-20"></div>
     </div>
   );
 }
