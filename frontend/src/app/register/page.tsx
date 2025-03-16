@@ -6,7 +6,9 @@ import Link from "next/link";
 
 export default function Register() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -15,17 +17,20 @@ export default function Register() {
     e.preventDefault();
     setMessage("");
 
+    const payload = {
+      name: companyName,
+      address: address,
+      phone: phone,
+      email: email,
+      password: password,
+      status: "active",
+    };
+
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userName: username,
-          email: email,
-          password: password,
-          role: "user",
-          status: "active",
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -44,32 +49,54 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-900 to-blue-900 p-6">
-      <div className="w-full max-w-md bg-black bg-opacity-50 rounded-lg shadow-xl p-8">
+    <div className="flex items-start justify-center bg-white p-6">
+      <div className="w-full max-w-md bg-gray-100 rounded-lg shadow-xl p-8">
         <h1 className="text-center text-2xl font-bold mb-6">
-          User Registration
+          Company Registration
         </h1>
         <form onSubmit={handleRegister} className="space-y-4">
-        <div>
+          <div>
             <input
               type="text"
-              id="username"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="companyname"
+              placeholder="Company Name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
               required
-              className="w-full p-3 rounded-md text-black"
+              className="w-full p-3 rounded-md text-black border"
             />
           </div>
           <div>
             <input
               type="text"
+              id="address"
+              placeholder="Address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+              className="w-full p-3 rounded-md text-black border"
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              id="phone"
+              placeholder="090-1234-5678"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="w-full p-3 rounded-md text-black border"
+            />
+          </div>
+          <div>
+            <input
+              type="email"
               id="email"
-              placeholder="Email"
+              placeholder="test@test"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 rounded-md text-black"
+              className="w-full p-3 rounded-md text-black border"
             />
           </div>
           <div>
@@ -80,7 +107,7 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 rounded-md text-black"
+              className="w-full p-3 rounded-md text-black border"
             />
           </div>
           <div>
@@ -95,7 +122,7 @@ export default function Register() {
         </form>
         {message && <p className="mt-4 text-center">{message}</p>}
         <p className="mt-6 text-center">
-          You already have an account?{" "}
+          Already have an account?{" "}
           <Link href="/login">
             <span className="text-blue-400 underline">Login here</span>
           </Link>

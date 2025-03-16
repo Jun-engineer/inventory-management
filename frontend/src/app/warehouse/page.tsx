@@ -3,13 +3,17 @@
 import { useEffect, useState } from "react";
 import Tabs, { Tab } from "../components/Tabs";
 
-export default function SettingsPage() {
+export default function WarehousePage() {
   const [initialTab, setInitialTab] = useState(0);
 
   const tabs: Tab[] = [
     {
-      label: "Settings",
-      content: <div>Content for Settings</div>,
+      label: "Warehouse List",
+      content: <div>Content for Warehouse</div>,
+    },
+    {
+      label: "Warehouse Update",
+      content: <div>Content for Warehouse Update</div>,
     },
   ];
 
@@ -41,7 +45,7 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Setting Page</h1>
+      <h1 className="text-3xl font-bold mb-4">Warehouse Page</h1>
       <Tabs tabs={tabs} initialTabIndex={initialTab} />
     </div>
   );

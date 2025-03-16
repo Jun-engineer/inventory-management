@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-900 to-blue-900 text-white">
-      <div className="text-center p-8 rounded-lg shadow-lg bg-black bg-opacity-50">
+    <div className="flex items-start justify-center bg-white text-black">
+      <div className="text-center p-8 rounded-lg shadow-lg bg-gray-100">
         <h1 className="text-4xl font-bold mb-6">Inventory Management System</h1>
         <div className="space-x-4">
           <Link href="/login">

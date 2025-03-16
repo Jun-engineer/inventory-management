@@ -1,22 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+type Warehouse = {
+  id: number;
+  warehouse_name: string;
+  location: string;
+};
 
 export default function ProductRegister() {
   const [productName, setProductName] = useState('');
-  const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
   const [warehouse, setWarehouse] = useState('');
-  const [newWarehouse, setNewWarehouse] = useState('');
+  const [newWarehouseName, setNewWarehouseName] = useState('');
+  const [newWarehouseLocation, setNewWarehouseLocation] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
-  const warehouseOptions = [
-    { id: 'warehouseA', name: 'Warehouse A' },
-    { id: 'warehouseB', name: 'Warehouse B' },
-    { id: 'add', name: 'Add New Warehouse' },
-  ];
+  // Fetch warehouse list from backend
+  useEffect(() => {
+    fetch('/api/warehouses', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setWarehouses(data))
+      .catch((err) => console.error('Error fetching warehouses', err));
+  }, []);
 
   const formatNumber = (value: string) => {
     const num = parseFloat(value.replace(/,/g, ''));
@@ -39,37 +48,48 @@ export default function ProductRegister() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Determine the warehouse value to send
-    const selectedWarehouse = warehouse === 'add' ? newWarehouse : warehouse;
+    // Determine warehouse id:
+    // If user selects an existing warehouse, warehouse_id is parsed.
+    // If "add" is selected, warehouse_id will be 0.
+    const warehouseId = warehouse !== 'add' ? parseInt(warehouse) : 0;
 
     const data = {
       product_name: productName,
-      sku,
-      price,
-      quantity,
+      // Remove sku – it will be generated automatically in the backend.
+      price: parseFloat(price.replace(/,/g, '')),
+      quantity: parseInt(quantity.replace(/,/g, '')),
       description,
-      warehouse_id: selectedWarehouse,
+      warehouse_id: warehouseId,
+      new_warehouse_name: warehouse === 'add' ? newWarehouseName : undefined,
+      new_warehouse_location:
+        warehouse === 'add' ? newWarehouseLocation : undefined,
     };
 
     try {
-      const res = await fetch('/api/products', {
+      const res = await fetch('/api/products/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
       if (res.ok) {
-        setMessage('Product registered successfully.');
+        setMessage('Product registered successfully. Reloading page...');
         // Reset the form fields
         setProductName('');
-        setSku('');
         setPrice('');
         setQuantity('');
         setDescription('');
         setWarehouse('');
-        setNewWarehouse('');
+        setNewWarehouseName('');
+        setNewWarehouseLocation('');
+        // Wait 3 seconds, then reload the page.
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
-        setMessage('Error registering product.');
+        const errorData = await res.json();
+        setMessage(errorData.error || 'Error registering product.');
       }
     } catch (error) {
       console.error('Error registering product:', error);
@@ -80,7 +100,6 @@ export default function ProductRegister() {
   return (
     <div className="px-4 py-6">
       <h2 className="text-2xl font-bold mb-6">Register Product</h2>
-      {message && <p className="mb-4 text-center">{message}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-gray-700 mb-2">Product Name</label>
@@ -92,19 +111,9 @@ export default function ProductRegister() {
             required
           />
         </div>
+        {/* SKU input removed */}
         <div>
-          <label className="block text-gray-700 mb-2">SKU</label>
-          <input
-            type="text"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        {/* Price Input with formatted suffix */}
-        <div>
-          <label className="block text-gray-700 mb-2">Price</label>
+          <label className="block text-gray-700 mb-2">Price (yen)</label>
           <div className="flex">
             <input
               type="text"
@@ -119,9 +128,8 @@ export default function ProductRegister() {
             </span>
           </div>
         </div>
-        {/* Quantity Input with formatted suffix */}
         <div>
-          <label className="block text-gray-700 mb-2">Quantity</label>
+          <label className="block text-gray-700 mb-2">Quantity (qty)</label>
           <div className="flex">
             <input
               type="text"
@@ -148,23 +156,42 @@ export default function ProductRegister() {
             <option value="" disabled>
               Select Warehouse
             </option>
-            {warehouseOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.name}
+            {warehouses.map((wh) => (
+              <option key={`warehouse-${wh.id}`} value={wh.id}>
+                {wh.warehouse_name} ({wh.location})
               </option>
             ))}
+            <option key="add" value="add">
+              Add New Warehouse
+            </option>
           </select>
           {warehouse === 'add' && (
-            <div className="mt-2">
-              <label className="block text-gray-700 mb-2">New Warehouse</label>
-              <input
-                type="text"
-                value={newWarehouse}
-                onChange={(e) => setNewWarehouse(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
+            <>
+              <div className="mt-2">
+                <label className="block text-gray-700 mb-2">
+                  New Warehouse Name
+                </label>
+                <input
+                  type="text"
+                  value={newWarehouseName}
+                  onChange={(e) => setNewWarehouseName(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div className="mt-2">
+                <label className="block text-gray-700 mb-2">
+                  New Warehouse Location
+                </label>
+                <input
+                  type="text"
+                  value={newWarehouseLocation}
+                  onChange={(e) => setNewWarehouseLocation(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+            </>
           )}
         </div>
         <div>
@@ -182,6 +209,7 @@ export default function ProductRegister() {
         >
           Register Product
         </button>
+        {message && <p className="mb-4 text-center">{message}</p>}
       </form>
     </div>
   );

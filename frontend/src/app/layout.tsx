@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Providers from "./providers";
 import { MenuProvider } from "./context/MenuContext";
 import LayoutContent from "./components/LayoutContent";
+import Footer from "./components/Footer";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
@@ -15,8 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-white text-black">
         <Providers>
           <MenuProvider>
-            <div className="max-w-5xl mx-auto p-6">
+            <div className="max-w-5xl mx-auto p-6 flex flex-col min-h-screen">
               <LayoutContent>{children}</LayoutContent>
+              <Footer />
             </div>
           </MenuProvider>
         </Providers>

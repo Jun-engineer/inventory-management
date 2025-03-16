@@ -17,15 +17,16 @@ import (
 
 // generateToken creates a JWT for the given email.
 // In production, load your secret from environment variables.
-func generateToken(email string) (string, error) {
+func generateToken(user models.Companies) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	if len(secret) == 0 {
 		secret = []byte("your_jwt_secret") // fallback secret; replace in production
 	}
 
 	claims := jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(72 * time.Hour).Unix(),
+		"companyID": user.ID,
+		"email":     user.Email,
+		"exp":       time.Now().Add(72 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(secret)
@@ -50,7 +51,7 @@ func LoginHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var user models.Users
+		var user models.Companies
 		if err := db.Where("email = ?", req.Email).First(&user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
@@ -61,7 +62,7 @@ func LoginHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		token, err := generateToken(user.Email)
+		token, err := generateToken(user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 			return
@@ -78,26 +79,27 @@ func LoginHandler(db *gorm.DB) gin.HandlerFunc {
 func RegisterHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
-			UserName string `json:"username"`
+			Name     string `json:"name"`
+			Address  string `json:"address"`
+			Phone    string `json:"phone"`
 			Email    string `json:"email"`
 			Password string `json:"password"`
-			Role     string `json:"role"`
 			Status   string `json:"status"`
 		}
 		if err := c.BindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 			return
 		}
-		req.UserName = strings.TrimSpace(req.UserName)
+		req.Name = strings.TrimSpace(req.Name)
 		req.Email = strings.TrimSpace(req.Email)
 		req.Password = strings.TrimSpace(req.Password)
-		if req.UserName == "" || req.Email == "" || req.Password == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Username, email, and password cannot be empty"})
+		if req.Name == "" || req.Email == "" || req.Password == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Company name, email, and password cannot be empty"})
 			return
 		}
 
 		// Check for an existing user (including soft-deleted ones).
-		var existing models.Users
+		var existing models.Companies
 		err := db.Unscoped().Where("email = ?", req.Email).First(&existing).Error
 		if err == nil {
 			// If record exists and is active (not soft-deleted), return conflict.
@@ -129,11 +131,12 @@ func RegisterHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		user := models.Users{
-			UserName:     req.UserName,
+		user := models.Companies{
+			Name:         req.Name,
+			Address:      req.Address,
+			Phone:        req.Phone,
 			Email:        req.Email,
 			PasswordHash: string(hashedPassword),
-			Role:         req.Role,
 			Status:       req.Status,
 		}
 		if err := db.Create(&user).Error; err != nil {
@@ -163,7 +166,7 @@ func ChangePasswordHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var user models.Users
+		var user models.Companies
 		if err := db.Where("email = ?", email).First(&user).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 			return
@@ -199,7 +202,7 @@ func DeleteAccountHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Where("email = ?", email).Delete(&models.Users{}).Error; err != nil {
+		if err := db.Where("email = ?", email).Delete(&models.Companies{}).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete account"})
 			return
 		}

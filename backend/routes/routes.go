@@ -36,14 +36,15 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	// Use the extracted CORS middleware.
 	r.Use(middleware.CORSMiddleware())
 
-	// Register routes by grouping them into submodules.
-	registerAuthRoutes(r, db)
+	authRoutes(r, db)
+	productRoutes(r, db)
+	warehouseRoutes(r, db)
 
 	return r
 }
 
-// registerAuthRoutes groups and registers authentication and user-related endpoints.
-func registerAuthRoutes(r *gin.Engine, db *gorm.DB) {
+// authRoutes groups and registers authentication and user-related endpoints.
+func authRoutes(r *gin.Engine, db *gorm.DB) {
 	auth := r.Group("/api")
 	{
 		auth.POST("/login/", handlers.LoginHandler(db))
@@ -57,5 +58,28 @@ func registerAuthRoutes(r *gin.Engine, db *gorm.DB) {
 				"email":   email,
 			})
 		})
+	}
+}
+
+func productRoutes(r *gin.Engine, db *gorm.DB) {
+	products := r.Group("/api/products")
+	{
+		// GET /api/products/ to list all products.
+		products.GET("/", handlers.GetProductsHandler(db))
+		// GET /api/products/:id to get a single product.
+		products.GET("/:id", handlers.GetProductHandler(db))
+		// POST for registration.
+		products.POST("/register", middleware.AuthMiddleware(), handlers.RegisterProductHandler(db))
+		// PUT /api/products/:id to update a product.
+		products.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateProductHandler(db))
+	}
+}
+
+// warehouseRoutes groups and registers the warehouse endpoints.
+func warehouseRoutes(r *gin.Engine, db *gorm.DB) {
+	warehouses := r.Group("/api/warehouses")
+	{
+		// GET /api/warehouses/ returns all warehouses.
+		warehouses.GET("/", handlers.GetWarehousesHandler(db))
 	}
 }

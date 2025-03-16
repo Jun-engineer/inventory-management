@@ -52,14 +52,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       {/* Relative container for positioning */}
       <div className="relative">
         <header className="p-4 border-b border-gray-300 flex justify-center items-center">
           <h1 className="text-3xl font-bold">Total Amount</h1>
         </header>
       </div>
-      <main className="flex-grow flex items-center justify-center">
+      <main className="flex-grow flex items-start justify-center">
         <div className="w-full max-w-3xl p-8 rounded-lg shadow-xl text-center">
           <h2 className="text-2xl font-bold mb-4">
             Welcome, {session.user?.name || "User"}!

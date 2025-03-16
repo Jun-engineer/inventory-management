@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Tabs, { Tab } from "../components/Tabs";
 
-export default function PricePage() {
+export default function SalesPage() {
   const [initialTab, setInitialTab] = useState(0);
 
   const tabs: Tab[] = [

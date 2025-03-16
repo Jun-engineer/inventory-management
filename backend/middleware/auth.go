@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	
+	"strconv"
+
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"	
+	"github.com/golang-jwt/jwt/v4"
 )
 
 var secretKey []byte
@@ -17,7 +18,7 @@ func InitSecret() {
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get the JWT token
+		// Get the JWT token from cookie.
 		cookie, err := c.Request.Cookie("next-auth.session-token")
 		if err != nil || cookie.Value == "" {
 			fmt.Println("Cookie retrieval error:", err)
@@ -29,7 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString := cookie.Value
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// Check the SigningMethod
+			// Check the signing method.
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
@@ -43,10 +44,27 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Retrieve user information from the token and set it in the context
+		// Retrieve user information from the token and store it into context.
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("email", claims["email"])
+
+			// Store email from claims.
+			if email, exists := claims["email"].(string); exists {
+				c.Set("email", email)
+			}
+			// If the token includes a companyID claim, store it.
+			if compID, exists := claims["companyID"]; exists {
+				// JWT numbers are float64.
+				if idFloat, ok := compID.(float64); ok {
+					c.Set("companyID", uint(idFloat))
+				} else if idStr, ok := compID.(string); ok {
+					// Alternatively, if it's a string, convert.
+					if id, err := strconv.Atoi(idStr); err == nil {
+						c.Set("companyID", uint(id))
+					}
+				}
+			}
 		}
+
 		c.Next()
 	}
 }

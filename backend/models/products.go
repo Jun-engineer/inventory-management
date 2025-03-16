@@ -6,12 +6,11 @@ import (
 
 type Products struct {
 	gorm.Model
-	ProductName string `gorm:"type: varchar(100); not null"`
-	Sku         string `gorm:"type: varchar(50); unique"`
-	Description string
-	CategoryID  uint
-	Category    Categories
-	SupplierID  uint
-	Supplier    Suppliers
-	Status      string `gorm:"type: enum('active', 'discontinued'); default: 'active'; not null"`
+	ProductName string    `gorm:"type:varchar(100); not null" json:"product_name"` // removed unique constraint
+	Sku         string    `gorm:"type:varchar(50); unique" json:"sku"`
+	Description string    `json:"description,omitempty"`
+	SupplierID  uint      `gorm:"not null" json:"supplier_id"`
+	Supplier    Companies `json:"supplier,omitempty"`
+	Price       float64   `gorm:"type:decimal(10,2); not null" json:"price"`
+	Status      string    `gorm:"type:varchar(50); default:'active'; not null" json:"status"`
 }

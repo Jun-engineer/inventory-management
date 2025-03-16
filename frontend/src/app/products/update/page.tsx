@@ -3,120 +3,86 @@
 import { useEffect, useState } from 'react';
 
 interface Product {
-  id: string;
+  id: number;
   product_name: string;
   sku: string;
-  price: string;
-  quantity: string;
+  price: number;
+  quantity: number;
   description: string;
-  warehouse_id: string;
+  warehouse: string;
+  warehouse_id: number;
+  supplier_id: number;
+}
+
+interface Warehouse {
+  id: number;
+  warehouse_name: string;
+  location: string;
 }
 
 export default function ProductUpdate() {
-  // Dummy products data (simulate data from DB)
-  const dummyProducts: Product[] = [
-    {
-      id: 'p1',
-      product_name: 'Product 1',
-      sku: 'SKU1',
-      price: '1,000',
-      quantity: '10',
-      description: 'Description for Product 1',
-      warehouse_id: 'warehouseA',
-    },
-    {
-      id: 'p2',
-      product_name: 'Product 2',
-      sku: 'SKU2',
-      price: '2,000',
-      quantity: '20',
-      description: 'Description for Product 2',
-      warehouse_id: 'warehouseB',
-    },
-  ];
-
-  const warehouseOptions = [
-    { id: 'warehouseA', name: 'Warehouse A' },
-    { id: 'warehouseB', name: 'Warehouse B' },
-    { id: 'add', name: 'Add New Warehouse' },
-  ];
-
-  const [selectedProduct, setSelectedProduct] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+  
+  // Fields for product details
   const [productName, setProductName] = useState('');
   const [sku, setSku] = useState('');
-  const [price, setPrice] = useState(''); // format like "1,000"
-  const [quantity, setQuantity] = useState(''); // format like "10"
+  const [price, setPrice] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(0);
   const [description, setDescription] = useState('');
-  const [warehouse, setWarehouse] = useState('');
-  const [newWarehouse, setNewWarehouse] = useState('');
+  // We'll store the warehouse name for display.
+  const [warehouseDisplay, setWarehouseDisplay] = useState('');
   const [message, setMessage] = useState('');
 
-  // When user selects a product and warehouse, auto-fill product data if available.
+  // Fetch products list
   useEffect(() => {
-    if (selectedProduct && warehouse && warehouse !== 'add') {
-      const prod = dummyProducts.find((p) => p.id === selectedProduct);
-      if (prod) {
-        if (prod.warehouse_id !== warehouse) {
-          // If product doesn't match the selected warehouse, clear fields or show a message.
-          setMessage('The selected product is not available in the chosen warehouse.');
-          setProductName('');
-          setSku('');
-          setPrice('');
-          setQuantity('');
-          setDescription('');
-        } else {
-          setProductName(prod.product_name);
-          setSku(prod.sku);
-          setPrice(prod.price);
-          setQuantity(prod.quantity);
-          setDescription(prod.description);
-          setMessage('');
-        }
-      }
-    }
-  }, [selectedProduct, warehouse]);
+    fetch('/api/products', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error('Error fetching products', err));
+  }, []);
 
-  const formatNumber = (value: string) => {
-    const num = parseFloat(value.replace(/,/g, ''));
-    if (isNaN(num)) return '';
-    return num.toLocaleString('en-US');
-  };
-
-  const handlePriceBlur = () => {
-    if (price !== '') {
-      setPrice(formatNumber(price));
+  // When a product is selected, fetch its details
+  useEffect(() => {
+    if (selectedProductId) {
+      fetch(`/api/products/${selectedProductId}`, { credentials: 'include' })
+        .then((res) => res.json())
+        .then((data: Product) => {
+          setProductName(data.product_name);
+          setSku(data.sku);
+          setPrice(data.price);
+          setQuantity(data.quantity);
+          setDescription(data.description);
+          setWarehouseDisplay(data.warehouse);
+        })
+        .catch((err) => console.error('Error fetching product details', err));
     }
-  };
-
-  const handleQuantityBlur = () => {
-    if (quantity !== '') {
-      setQuantity(formatNumber(quantity));
-    }
-  };
+  }, [selectedProductId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const selectedWarehouse = warehouse === 'add' ? newWarehouse : warehouse;
-
     const data = {
       product_name: productName,
-      sku,
+      sku, // sent for reference (though not editable)
       price,
       quantity,
       description,
-      warehouse_id: selectedWarehouse,
+      // The warehouse is not updatable, so no warehouse_id is sent.
     };
 
     try {
-      // Simulate an update via a PUT request.
-      const res = await fetch(`/api/products/${selectedProduct}`, {
+      const res = await fetch(`/api/products/${selectedProductId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        setMessage('Product updated successfully.');
+        setMessage('Product updated successfully. Reloading page...');
+        // Reload the page after 3 seconds.
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
         setMessage('Error updating product.');
       }
@@ -129,104 +95,86 @@ export default function ProductUpdate() {
   return (
     <div className="px-4 py-6">
       <h2 className="text-2xl font-bold mb-6">Update Product</h2>
-      {message && <p className="mb-4 text-center">{message}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Product Selection */}
+        {/* Product Selection Dropdown */}
         <div>
           <label className="block text-gray-700 mb-2">Select Product</label>
           <select
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
+            value={selectedProductId || ''}
+            onChange={(e) => setSelectedProductId(Number(e.target.value))}
             className="w-full p-2 border rounded"
             required
           >
             <option value="" disabled>
               Select a Product
             </option>
-            {dummyProducts.map((prod) => (
+            {products.map((prod) => (
               <option key={prod.id} value={prod.id}>
-                {prod.product_name}
+                {prod.product_name} - {prod.sku} ({prod.warehouse})
               </option>
             ))}
           </select>
         </div>
-        {/* Warehouse Selection */}
+
+        {/* Display Warehouse as non-editable field */}
         <div>
-          <label className="block text-gray-700 mb-2">Select Warehouse</label>
-          <select
-            value={warehouse}
-            onChange={(e) => setWarehouse(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          >
-            <option value="" disabled>
-              Select Warehouse
-            </option>
-            {warehouseOptions.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.name}
-              </option>
-            ))}
-          </select>
-          {warehouse === 'add' && (
-            <div className="mt-2">
-              <label className="block text-gray-700 mb-2">New Warehouse</label>
-              <input
-                type="text"
-                value={newWarehouse}
-                onChange={(e) => setNewWarehouse(e.target.value)}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-          )}
+          <label className="block text-gray-700 mb-2">Warehouse</label>
+          <input
+            type="text"
+            value={warehouseDisplay}
+            className="w-full p-2 border rounded bg-gray-200 cursor-not-allowed"
+            disabled
+          />
         </div>
-        {/* SKU */}
+
+        {/* Display SKU as read-only */}
         <div>
           <label className="block text-gray-700 mb-2">SKU</label>
           <input
             type="text"
             value={sku}
-            onChange={(e) => setSku(e.target.value)}
+            className="w-full p-2 border rounded bg-gray-200 cursor-not-allowed"
+            readOnly
+          />
+        </div>
+
+        {/* Editable Fields */}
+        <div>
+          <label className="block text-gray-700 mb-2">Product Name</label>
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
             className="w-full p-2 border rounded"
             required
           />
         </div>
-        {/* Price with suffix */}
         <div>
-          <label className="block text-gray-700 mb-2">Price</label>
+          <label className="block text-gray-700 mb-2">Price (yen)</label>
           <div className="flex">
             <input
-              type="text"
+              type="number"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              onBlur={handlePriceBlur}
+              onChange={(e) => setPrice(Number(e.target.value))}
               className="w-full p-2 border rounded-l"
               required
             />
-            <span className="px-2 border border-l-0 rounded-r bg-gray-200">
-              yen
-            </span>
+            <span className="px-2 border border-l-0 rounded-r bg-gray-200">yen</span>
           </div>
         </div>
-        {/* Quantity with suffix */}
         <div>
-          <label className="block text-gray-700 mb-2">Quantity</label>
+          <label className="block text-gray-700 mb-2">Quantity (qty)</label>
           <div className="flex">
             <input
-              type="text"
+              type="number"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              onBlur={handleQuantityBlur}
+              onChange={(e) => setQuantity(Number(e.target.value))}
               className="w-full p-2 border rounded-l"
               required
             />
-            <span className="px-2 border border-l-0 rounded-r bg-gray-200">
-              qty
-            </span>
+            <span className="px-2 border border-l-0 rounded-r bg-gray-200">qty</span>
           </div>
         </div>
-        {/* Description */}
         <div>
           <label className="block text-gray-700 mb-2">Description</label>
           <textarea
@@ -242,6 +190,7 @@ export default function ProductUpdate() {
         >
           Update Product
         </button>
+        {message && <p className="mt-4 text-center text-green-600">{message}</p>}
       </form>
     </div>
   );

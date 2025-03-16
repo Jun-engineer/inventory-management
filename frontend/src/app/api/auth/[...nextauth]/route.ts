@@ -1,4 +1,5 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
+import jwt from "jsonwebtoken";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
@@ -61,11 +62,20 @@ export const authOptions: NextAuthOptions = {
     }
   },
   callbacks: {
-    async jwt({ token, user }) {
-      // On first sign in, user will be defined
+    async jwt({ token, user, secret }) {
+      // When first signing in, user will be defined.
       if (user) {
-        token.token = user.token; // store the backend JWT if needed
+        token.token = user.token; // backend's JWT token
         token.email = user.email;
+        // Decode the backend token to get the companyID claim.
+        try {
+          const decoded = jwt.verify(user.token, process.env.NEXTAUTH_SECRET!) as jwt.JwtPayload;
+          if (decoded && decoded.companyID) {
+            token.companyID = decoded.companyID;
+          }
+        } catch (error) {
+          console.error("Error decoding backend token:", error);
+        }
       }
       return token;
     },
@@ -74,6 +84,7 @@ export const authOptions: NextAuthOptions = {
       session.user = {
         email: token.email,
         token: token.token,
+        companyID: token.companyID,
       }
       return session;
     },
