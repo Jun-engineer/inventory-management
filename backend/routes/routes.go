@@ -47,10 +47,10 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 func authRoutes(r *gin.Engine, db *gorm.DB) {
 	auth := r.Group("/api")
 	{
-		auth.POST("/login/", handlers.LoginHandler(db))
-		auth.POST("/register/", handlers.RegisterHandler(db))
-		auth.PUT("/user/password/", middleware.AuthMiddleware(), handlers.ChangePasswordHandler(db))
-		auth.DELETE("/user/", middleware.AuthMiddleware(), handlers.DeleteAccountHandler(db))
+		auth.POST("/login", handlers.LoginHandler(db))
+		auth.POST("/register", handlers.RegisterHandler(db))
+		auth.PUT("/user/password", middleware.AuthMiddleware(), handlers.ChangePasswordHandler(db))
+		auth.DELETE("/user", middleware.AuthMiddleware(), handlers.DeleteAccountHandler(db))
 		auth.GET("/protected/", middleware.AuthMiddleware(), func(c *gin.Context) {
 			email := c.GetString("email")
 			c.JSON(http.StatusOK, gin.H{
@@ -64,14 +64,11 @@ func authRoutes(r *gin.Engine, db *gorm.DB) {
 func productRoutes(r *gin.Engine, db *gorm.DB) {
 	products := r.Group("/api/products")
 	{
-		// GET /api/products/ to list all products.
 		products.GET("/", handlers.GetProductsHandler(db))
-		// GET /api/products/:id to get a single product.
 		products.GET("/:id", handlers.GetProductHandler(db))
-		// POST for registration.
 		products.POST("/register", middleware.AuthMiddleware(), handlers.RegisterProductHandler(db))
-		// PUT /api/products/:id to update a product.
 		products.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateProductHandler(db))
+		products.DELETE("/:id", middleware.AuthMiddleware(), handlers.DeleteProductHandler(db))
 	}
 }
 
@@ -79,7 +76,10 @@ func productRoutes(r *gin.Engine, db *gorm.DB) {
 func warehouseRoutes(r *gin.Engine, db *gorm.DB) {
 	warehouses := r.Group("/api/warehouses")
 	{
-		// GET /api/warehouses/ returns all warehouses.
 		warehouses.GET("/", handlers.GetWarehousesHandler(db))
+		warehouses.GET("/:id", handlers.GetWarehouseHandler(db))
+		warehouses.PUT("/:id", handlers.UpdateWarehouseHandler(db))
+		warehouses.POST("/", handlers.AddWarehouseHandler(db))
+		warehouses.DELETE("/:id", handlers.DeleteWarehouseHandler(db))
 	}
 }

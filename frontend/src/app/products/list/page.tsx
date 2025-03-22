@@ -23,8 +23,7 @@ export default function ProductList() {
   }, []);
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Product List</h2>
+    <>
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -47,6 +46,6 @@ export default function ProductList() {
           ))}
         </tbody>
       </table>
-    </div>
+    </>
   );
 }

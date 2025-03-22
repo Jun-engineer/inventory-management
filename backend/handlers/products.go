@@ -27,9 +27,12 @@ func GetProductsHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var products []ProductResponse
 		err := db.Table("products").
-			Select("products.id, products.product_name, products.sku, products.price, inventory_stocks.quantity_in_stock as quantity, products.description, warehouses.warehouse_name as warehouse").
+			Select(`products.id, products.product_name, products.sku, products.price, 
+							inventory_stocks.quantity_in_stock as quantity, products.description, 
+							warehouses.warehouse_name as warehouse`).
 			Joins("LEFT JOIN inventory_stocks ON inventory_stocks.product_id = products.id").
 			Joins("LEFT JOIN warehouses ON inventory_stocks.warehouse_id = warehouses.id").
+			Where("products.deleted_at IS NULL"). // only select non-deleted products
 			Scan(&products).Error
 
 		if err != nil {
@@ -243,5 +246,31 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Product updated successfully"})
+	}
+}
+
+// DeleteProductHandler deletes a product by id.
+func DeleteProductHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idParam := c.Param("id")
+		productID, err := strconv.Atoi(idParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product id"})
+			return
+		}
+
+		var product models.Products
+		if err := db.First(&product, productID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+			return
+		}
+
+		// Delete the product (soft-delete if gorm.Model is embedded)
+		if err := db.Delete(&product).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Product deleted successfully"})
 	}
 }
