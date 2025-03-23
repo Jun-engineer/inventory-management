@@ -10,11 +10,22 @@ import (
 	"backend/models"
 )
 
-// GetWarehousesHandler returns all warehouses from the database.
 func GetWarehousesHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Get authenticated company id from context.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var warehouses []models.Warehouse
-		if err := db.Find(&warehouses).Error; err != nil {
+		if err := db.Where("company_id = ? AND deleted_at IS NULL", companyID).Find(&warehouses).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch warehouses"})
 			return
 		}
@@ -93,9 +104,22 @@ func AddWarehouseHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id from context.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		newWarehouse := models.Warehouse{
 			WarehouseName: req.WarehouseName,
 			Location:      req.Location,
+			CompanyID:     companyID,
 		}
 		if err := db.Create(&newWarehouse).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create warehouse"})

@@ -25,15 +25,32 @@ type ProductResponse struct {
 // GetProductsHandler retrieves the product list, joining inventory stock and warehouse data.
 func GetProductsHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Get the current (authenticated) company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		currentCompanyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse company id"})
+			return
+		}
+
 		var products []ProductResponse
+		// Use Find instead of Scan to ensure products is an array.
 		err := db.Table("products").
 			Select(`products.id, products.product_name, products.sku, products.price, 
-							inventory_stocks.quantity_in_stock as quantity, products.description, 
-							warehouses.warehouse_name as warehouse`).
+         inventory_stocks.quantity_in_stock as quantity, products.description, 
+         warehouses.warehouse_name as warehouse`).
 			Joins("LEFT JOIN inventory_stocks ON inventory_stocks.product_id = products.id").
 			Joins("LEFT JOIN warehouses ON inventory_stocks.warehouse_id = warehouses.id").
-			Where("products.deleted_at IS NULL"). // only select non-deleted products
-			Scan(&products).Error
+			Joins(`LEFT JOIN permission_requests 
+         ON permission_requests.seller_id = products.supplier_id 
+         AND permission_requests.requester_id = ? 
+         AND permission_requests.status = 'permitted'`, currentCompanyID).
+			Where("products.deleted_at IS NULL AND (products.supplier_id = ? OR (permission_requests.requester_id = ? AND permission_requests.status = 'permitted'))", currentCompanyID, currentCompanyID).
+			Find(&products).Error
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch products"})

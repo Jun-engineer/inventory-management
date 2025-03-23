@@ -13,4 +13,5 @@ type Warehouse struct {
 	DeletedAt     gorm.DeletedAt `json:"deleted_at,omitempty"`
 	WarehouseName string         `gorm:"type:varchar(100);not null" json:"warehouse_name"`
 	Location      string         `gorm:"type:varchar(100)" json:"location"`
+	CompanyID     uint           `json:"company_id"` // new field to track the owner
 }

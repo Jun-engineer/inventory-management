@@ -65,8 +65,8 @@ func authRoutes(r *gin.Engine, db *gorm.DB) {
 func productRoutes(r *gin.Engine, db *gorm.DB) {
 	products := r.Group("/api/products")
 	{
-		products.GET("/", handlers.GetProductsHandler(db))
-		products.GET("/:id", handlers.GetProductHandler(db))
+		products.GET("/", middleware.AuthMiddleware(), handlers.GetProductsHandler(db))
+		products.GET("/:id", middleware.AuthMiddleware(), handlers.GetProductHandler(db))
 		products.POST("/register", middleware.AuthMiddleware(), handlers.RegisterProductHandler(db))
 		products.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateProductHandler(db))
 		products.DELETE("/:id", middleware.AuthMiddleware(), handlers.DeleteProductHandler(db))
@@ -77,11 +77,11 @@ func productRoutes(r *gin.Engine, db *gorm.DB) {
 func warehouseRoutes(r *gin.Engine, db *gorm.DB) {
 	warehouses := r.Group("/api/warehouses")
 	{
-		warehouses.GET("/", handlers.GetWarehousesHandler(db))
-		warehouses.GET("/:id", handlers.GetWarehouseHandler(db))
-		warehouses.PUT("/:id", handlers.UpdateWarehouseHandler(db))
-		warehouses.POST("/", handlers.AddWarehouseHandler(db))
-		warehouses.DELETE("/:id", handlers.DeleteWarehouseHandler(db))
+		warehouses.GET("/", middleware.AuthMiddleware(), handlers.GetWarehousesHandler(db))
+		warehouses.GET("/:id", middleware.AuthMiddleware(), handlers.GetWarehouseHandler(db))
+		warehouses.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateWarehouseHandler(db))
+		warehouses.POST("/", middleware.AuthMiddleware(), handlers.AddWarehouseHandler(db))
+		warehouses.DELETE("/:id", middleware.AuthMiddleware(), handlers.DeleteWarehouseHandler(db))
 	}
 }
 
