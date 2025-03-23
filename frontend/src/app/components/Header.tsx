@@ -101,6 +101,15 @@ export default function Header() {
               </li>
               <li className="py-2">
                 <Link
+                  href="/requests"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-left"
+                >
+                  Requests
+                </Link>
+              </li>
+              <li className="py-2">
+                <Link
                   href="/settings"
                   onClick={() => setMenuOpen(false)}
                   className="block text-left"

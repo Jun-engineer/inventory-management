@@ -39,6 +39,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	authRoutes(r, db)
 	productRoutes(r, db)
 	warehouseRoutes(r, db)
+	permissionRequestRoutes(r, db)
 
 	return r
 }
@@ -81,5 +82,16 @@ func warehouseRoutes(r *gin.Engine, db *gorm.DB) {
 		warehouses.PUT("/:id", handlers.UpdateWarehouseHandler(db))
 		warehouses.POST("/", handlers.AddWarehouseHandler(db))
 		warehouses.DELETE("/:id", handlers.DeleteWarehouseHandler(db))
+	}
+}
+
+// permissionRequestRoutes groups and registers the permission request endpoints.
+func permissionRequestRoutes(r *gin.Engine, db *gorm.DB) {
+	permissionRequests := r.Group("/api/requests")
+	{
+		permissionRequests.GET("/", middleware.AuthMiddleware(), handlers.GetPermissionRequestsHandler(db))
+		permissionRequests.GET("/search", middleware.AuthMiddleware(), handlers.SearchPermissionRequestsHandler(db))
+		permissionRequests.POST("/", middleware.AuthMiddleware(), handlers.SendPermissionRequestHandler(db))
+		permissionRequests.PUT("/:requestId", middleware.AuthMiddleware(), handlers.UpdatePermissionRequestHandler(db))
 	}
 }
