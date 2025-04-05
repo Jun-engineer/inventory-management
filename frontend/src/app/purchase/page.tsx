@@ -9,6 +9,7 @@ interface Product {
   product_name: string;
   sku: string;
   price: number;
+  // Note: quantity and warehouse still exist in the model but will not be used here.
   quantity: number;
   description: string;
   warehouse: string;
@@ -19,14 +20,15 @@ type SortOrder = "asc" | "desc";
 
 export default function PurchasePage() {
   const [products, setProducts] = useState<Product[]>([]);
+  // We will only sort on supplier_name, product_name, or price.
   const [sortField, setSortField] = useState<keyof Product>("product_name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+
+  // Only include filtering for supplier, product and price
   const [filters, setFilters] = useState({
     supplier_name: "",
     product_name: "",
     price: "",
-    quantity: "",
-    warehouse: "",
   });
   const [filterPopup, setFilterPopup] = useState<{ field: keyof Product } | null>(null);
 
@@ -37,6 +39,7 @@ export default function PurchasePage() {
       .catch((err) => console.error("Error fetching purchase products", err));
   }, []);
 
+  // Close filter popup when clicking outside it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const popupElement = document.querySelector(".filter-popup");
@@ -71,6 +74,7 @@ export default function PurchasePage() {
     setFilterPopup(null);
   };
 
+  // Only filter based on supplier, product name, and price.
   const filteredProducts = products.filter((p) => {
     const supplierMatch = p.supplier_name
       .toLowerCase()
@@ -79,11 +83,7 @@ export default function PurchasePage() {
       .toLowerCase()
       .includes(filters.product_name.toLowerCase());
     const priceMatch = filters.price ? p.price === Number(filters.price) : true;
-    const quantityMatch = filters.quantity ? p.quantity === Number(filters.quantity) : true;
-    const warehouseMatch = p.warehouse
-      .toLowerCase()
-      .includes(filters.warehouse.toLowerCase());
-    return supplierMatch && nameMatch && priceMatch && quantityMatch && warehouseMatch;
+    return supplierMatch && nameMatch && priceMatch;
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -144,30 +144,6 @@ export default function PurchasePage() {
                   onToggleFilterPopup={onToggleFilterPopup}
                   onCloseFilterPopup={onCloseFilterPopup}
                 />
-                <FilterHeader<Product>
-                  field="quantity"
-                  title="Quantity"
-                  sortField={sortField}
-                  sortOrder={sortOrder}
-                  filterPopup={filterPopup}
-                  filters={filters}
-                  onSort={handleSort}
-                  onFilterChange={onFilterChange}
-                  onToggleFilterPopup={onToggleFilterPopup}
-                  onCloseFilterPopup={onCloseFilterPopup}
-                />
-                <FilterHeader<Product>
-                  field="warehouse"
-                  title="Warehouse"
-                  sortField={sortField}
-                  sortOrder={sortOrder}
-                  filterPopup={filterPopup}
-                  filters={filters}
-                  onSort={handleSort}
-                  onFilterChange={onFilterChange}
-                  onToggleFilterPopup={onToggleFilterPopup}
-                  onCloseFilterPopup={onCloseFilterPopup}
-                />
               </tr>
             </thead>
             <tbody>
@@ -176,8 +152,6 @@ export default function PurchasePage() {
                   <td className="border p-2">{product.supplier_name}</td>
                   <td className="border p-2">{product.product_name}</td>
                   <td className="border p-2">{product.price}</td>
-                  <td className="border p-2">{product.quantity}</td>
-                  <td className="border p-2">{product.warehouse}</td>
                 </tr>
               ))}
             </tbody>
@@ -191,7 +165,6 @@ export default function PurchasePage() {
     },
   ];
 
-  // A simple tab switcher (if needed)
   const [initialTab, setInitialTab] = useState(0);
   useEffect(() => {
     const updateTabFromHash = () => {
