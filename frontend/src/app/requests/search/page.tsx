@@ -1,36 +1,61 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type PermissionRequest = {
+interface PermissionRequest {
   ID: number;
   requester_email: string;
   requester_phone: string;
   status: string;
-};
+}
 
 export default function PermissionSearch() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [results, setResults] = useState<PermissionRequest[]>([]);
   const [message, setMessage] = useState("");
+  const [searched, setSearched] = useState(false);
 
   const handleSearch = async () => {
     try {
+      setSearched(true);
       const queryParams = new URLSearchParams();
       if (email) queryParams.append("email", email);
       if (phone) queryParams.append("phone", phone);
 
-      const res = await fetch(
-        `/api/requests/search?${queryParams.toString()}`,
-        { credentials: "include" }
-      );
+      const res = await fetch(`/api/requests/search?${queryParams.toString()}`, { credentials: "include" });
       if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
       setResults(data);
     } catch (error) {
       console.error(error);
       setMessage("Search error.");
+    }
+  };
+
+  const handlePermit = async (requestId: number) => {
+    try {
+      const res = await fetch(`/api/requests/${requestId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status: "permitted" }),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        setMessage(errData.error || "Update failed.");
+        return;
+      }
+      setMessage("Request permitted successfully.");
+      // Update local state
+      setResults(prev =>
+        prev.map(r => r.ID === requestId ? { ...r, status: "permitted" } : r)
+      );
+      // Reload page after 3 seconds.
+      setTimeout(() => window.location.reload(), 3000);
+    } catch (error) {
+      console.error(error);
+      setMessage("An error occurred.");
     }
   };
 
@@ -64,7 +89,7 @@ export default function PermissionSearch() {
         </button>
       </div>
       <div className="mt-4">
-        {results.length === 0 ? (
+        {searched && results.length === 0 ? (
           <p>No matching permission requests.</p>
         ) : (
           <ul>
@@ -73,6 +98,14 @@ export default function PermissionSearch() {
                 <p>Email: {req.requester_email}</p>
                 <p>Phone: {req.requester_phone}</p>
                 <p>Status: {req.status}</p>
+                {req.status === "pending" && (
+                  <button
+                    onClick={() => handlePermit(req.ID)}
+                    className="bg-green-500 text-white px-2 py-1 rounded mt-2"
+                  >
+                    Permit Request
+                  </button>
+                )}
               </li>
             ))}
           </ul>

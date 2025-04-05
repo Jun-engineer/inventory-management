@@ -17,6 +17,8 @@ export default function SendRequest() {
       });
       if (res.ok) {
         setMessage("Request sent successfully.");
+        // reload page after 2 seconds.
+        setTimeout(() => window.location.reload(), 2000);
       } else {
         const errData = await res.json();
         setMessage(errData.error || "Failed to send request.");
@@ -32,7 +34,7 @@ export default function SendRequest() {
       <h2 className="text-2xl mb-4">Send Permission Request</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1">Enter Seller's Email:</label>
+          <label className="block mb-1">Enter Seller&apos;s Email:</label>
           <input
             type="email"
             value={sellerEmail}
