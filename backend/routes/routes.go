@@ -41,6 +41,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	warehouseRoutes(r, db)
 	permissionRequestRoutes(r, db)
 	purchaseRoutes(r, db)
+	orderRoutes(r, db)
 
 	return r
 }
@@ -101,5 +102,14 @@ func purchaseRoutes(r *gin.Engine, db *gorm.DB) {
 	purchaseProducts := r.Group("/api/purchase-products")
 	{
 		purchaseProducts.GET("/", middleware.AuthMiddleware(), handlers.GetPurchaseProductsHandler(db))
+	}
+}
+
+func orderRoutes(r *gin.Engine, db *gorm.DB) {
+	orders := r.Group("/api/orders")
+	{
+		orders.POST("/", middleware.AuthMiddleware(), handlers.CreateOrderHandler(db))
+		orders.GET("/", middleware.AuthMiddleware(), handlers.GetOrdersHandler(db))
+		orders.PUT("/:id/permit", middleware.AuthMiddleware(), handlers.PermitOrderHandler(db))
 	}
 }
