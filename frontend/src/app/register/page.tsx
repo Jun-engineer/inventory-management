@@ -92,7 +92,7 @@ export default function Register() {
             <input
               type="email"
               id="email"
-              placeholder="test@test"
+              placeholder="test@test.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

@@ -43,6 +43,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	purchaseRoutes(r, db)
 	orderRoutes(r, db)
 	salesRoutes(r, db)
+	settingsRoutes(r, db)
 
 	return r
 }
@@ -121,5 +122,14 @@ func salesRoutes(r *gin.Engine, db *gorm.DB) {
 	sales := r.Group("/api/sales")
 	{
 		sales.GET("/", middleware.AuthMiddleware(), handlers.GetSalesHandler(db))
+	}
+}
+
+func settingsRoutes(r *gin.Engine, db *gorm.DB) {
+	settings := r.Group("/api/settings")
+	{
+		settings.GET("/", middleware.AuthMiddleware(), handlers.GetSettingsHandler(db))
+		settings.PUT("/update", middleware.AuthMiddleware(), handlers.UpdateSettingsHandler(db))
+		settings.PUT("/password", middleware.AuthMiddleware(), handlers.ChangeCompanyPasswordHandler(db))
 	}
 }
