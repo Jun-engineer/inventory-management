@@ -79,12 +79,12 @@ func LoginHandler(db *gorm.DB) gin.HandlerFunc {
 func RegisterHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
-			Name     string `json:"name"`
-			Address  string `json:"address"`
-			Phone    string `json:"phone"`
-			Email    string `json:"email"`
-			Password string `json:"password"`
-			Status   string `json:"status"`
+			Name     string `json:"name" binding:"required"`
+			Address  string `json:"address" binding:"required"`
+			Phone    string `json:"phone" binding:"required"`
+			Email    string `json:"email" binding:"required,email"`
+			Password string `json:"password" binding:"required,min=8"`
+			Status   string `json:"status" binding:"required"`
 		}
 		if err := c.BindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})

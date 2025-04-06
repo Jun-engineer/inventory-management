@@ -107,6 +107,7 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
               className="w-full p-3 rounded-md text-black border"
             />
           </div>
