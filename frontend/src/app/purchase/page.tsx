@@ -40,6 +40,7 @@ interface Order {
 }
 
 export default function PurchasePage() {
+  // Data states
   const [products, setProducts] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
@@ -59,6 +60,7 @@ export default function PurchasePage() {
   const [filterPopup, setFilterPopup] = useState<{ field: keyof Product } | null>(null);
   const [quantityInputs, setQuantityInputs] = useState<{ [productId: number]: number }>({});
 
+  // Fetch products on mount
   useEffect(() => {
     fetch("/api/purchase-products", { credentials: "include" })
       .then((res) => res.json())
@@ -89,13 +91,13 @@ export default function PurchasePage() {
     fetchOrders();
   }, []);
 
+  // Filter and sort products in Purchase tab
   const filteredProducts = products.filter((p) => {
     const supplierMatch = p.supplier_name.toLowerCase().includes(filters.supplier_name.toLowerCase());
     const nameMatch = p.product_name.toLowerCase().includes(filters.product_name.toLowerCase());
     const priceMatch = filters.price ? p.price === Number(filters.price) : true;
     return supplierMatch && nameMatch && priceMatch;
   });
-
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     let aVal = a[sortField];
     let bVal = b[sortField];
@@ -107,7 +109,6 @@ export default function PurchasePage() {
     }
     return 0;
   });
-
   const handleSort = (field: keyof Product) => {
     if (sortField === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -116,15 +117,12 @@ export default function PurchasePage() {
       setSortOrder("asc");
     }
   };
-
   const onFilterChange = (field: keyof Product, value: string) => {
     setFilters({ ...filters, [field]: value });
   };
-
   const onToggleFilterPopup = (field: keyof Product) => {
     setFilterPopup({ field });
   };
-
   const onCloseFilterPopup = () => {
     setFilterPopup(null);
   };
@@ -147,55 +145,134 @@ export default function PurchasePage() {
     setQuantityInputs((prev) => ({ ...prev, [productId]: value }));
   };
 
-  const orderHistoryContent = (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Order History</h2>
-      {orderHistory.length === 0 ? (
-        <p>No orders have been placed yet.</p>
-      ) : (
-        <table className="min-w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">Order ID</th>
-              <th className="border p-2">Date</th>
-              <th className="border p-2">Total ($)</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2">Items</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orderHistory.map((order, orderIndex) => {
-              const orderKey = order.id ?? `order-${orderIndex}`;
-              return (
-                <tr key={orderKey}>
-                  <td className="border p-2">{order.id ?? "N/A"}</td>
-                  <td className="border p-2">{new Date(order.date).toLocaleString()}</td>
-                  <td className="border p-2">{order.total.toFixed(2)}</td>
-                  <td className="border p-2">{order.status}</td>
-                  <td className="border p-2">
-                    {(order.OrderItems || []).map((item, index) => {
-                      const itemKey = `${orderKey}-item-${item.id ?? index}`;
-                      return (
-                        <div key={itemKey}>
-                          Product ID {item.product_id} (x{item.quantity})
-                        </div>
-                      );
-                    })}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-    </div>
+  const handleOrder = async () => {
+    if (cartItems.length === 0) return;
+    const orderPayload = {
+      items: cartItems.map((item) => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+      })),
+    };
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderPayload),
+      credentials: "include",
+    });
+    if (res.ok) {
+      alert("Order placed successfully!");
+      setCartItems([]);
+      localStorage.removeItem("cartItems");
+      // Optionally refresh the order history:
+      const ordersRes = await fetch("/api/orders", { credentials: "include" });
+      if (ordersRes.ok) {
+        const orders = await ordersRes.json();
+        setOrderHistory(orders);
+      }
+    } else {
+      alert("Failed to place order.");
+    }
+  };
+
+  // Filter orders by status for the Purchase Pending/Processing/History tabs.
+  const pendingOrders = orderHistory.filter(
+    (order) => order.status.toLowerCase() === "pending"
+  );
+  const processingOrders = orderHistory.filter(
+    (order) => order.status.toLowerCase() === "processing"
+  );
+  const deliveredOrders = orderHistory.filter(
+    (order) => order.status.toLowerCase() === "delivered"
+  );
+  const historyOrders = orderHistory.filter(
+    (order) => order.status.toLowerCase() === "completed"
   );
 
+  // Function to handle Delivered action (buyer marks a "processing" order as delivered)
+  const deliverOrder = async (orderId?: number) => {
+    if (!orderId) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}/deliver`, {
+        method: "PUT",
+        credentials: "include",
+      });
+      if (res.ok) {
+        const updatedOrder = await res.json();
+        setOrderHistory((prev) =>
+          prev.map((order) =>
+            order.id === updatedOrder.id ? updatedOrder : order
+          )
+        );
+      } else {
+        alert("Failed to mark order as delivered.");
+      }
+    } catch (error) {
+      console.error("Error marking order as delivered", error);
+    }
+  };
+
+  // Helper to render orders table. For the "Working" tab, include the Delivered button.
+  const renderOrderContent = (
+    orders: Order[],
+    showDeliveredButton: boolean = false
+  ) => {
+    if (orders.length === 0) return <p>No orders available.</p>;
+    return (
+      <table className="min-w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="border p-2">Order ID</th>
+            <th className="border p-2">Date</th>
+            <th className="border p-2">Total ($)</th>
+            <th className="border p-2">Status</th>
+            <th className="border p-2">Items</th>
+            {showDeliveredButton && <th className="border p-2">Action</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((order, orderIndex) => {
+            const orderKey = order.id ?? `order-${orderIndex}`;
+            return (
+              <tr key={orderKey}>
+                <td className="border p-2">{order.id ?? "N/A"}</td>
+                <td className="border p-2">{new Date(order.date).toLocaleString()}</td>
+                <td className="border p-2">{order.total.toFixed(2)}</td>
+                <td className="border p-2">{order.status}</td>
+                <td className="border p-2">
+                  {(order.OrderItems || []).map((item, i) => {
+                    const itemKey = `${orderKey}-item-${item.id ?? i}`;
+                    return (
+                      <div key={itemKey}>
+                        Product ID {item.product_id} (x{item.quantity})
+                      </div>
+                    );
+                  })}
+                </td>
+                {showDeliveredButton && (
+                  <td className="border p-2">
+                    <button
+                      className="border px-2 py-1 bg-purple-500 text-white"
+                      onClick={() => deliverOrder(order.id)}
+                    >
+                      Delivered
+                    </button>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  };
+
+  // Define the tabs. Note that the Delivered button is now in the Working tab.
   const tabs: Tab[] = [
     {
       label: "Purchase",
       content: (
         <div>
+          {/* Render product ordering table */}
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="bg-gray-200">
@@ -267,15 +344,39 @@ export default function PurchasePage() {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-end items-center my-4">
+            <span className="mr-4 font-bold">
+              Total: ${cartItems.reduce((t, i) => t + i.product.price * i.quantity, 0).toFixed(2)}
+            </span>
+            <button
+              onClick={handleOrder}
+              className="border px-4 py-2 bg-blue-500 text-white"
+            >
+              Order
+            </button>
+          </div>
         </div>
       ),
     },
     {
-      label: "Order History",
-      content: orderHistoryContent,
+      label: "Pending",
+      content: renderOrderContent(pendingOrders),
+    },
+    {
+      label: "Working",
+      content: renderOrderContent(processingOrders, true),
+    },
+    {
+      label: "Delivered",
+      content: renderOrderContent(deliveredOrders),
+    },
+    {
+      label: "History",
+      content: renderOrderContent(historyOrders),
     },
   ];
 
+  // Manage the initial tab index from URL hash
   const [initialTab, setInitialTab] = useState(0);
   useEffect(() => {
     const updateTabFromHash = () => {

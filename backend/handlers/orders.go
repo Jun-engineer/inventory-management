@@ -111,9 +111,8 @@ func GetOrdersHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// PermitOrderHandler updates the order status to "Permitted".
-// This endpoint is intended for sellers to approve an order.
-func PermitOrderHandler(db *gorm.DB) gin.HandlerFunc {
+// AcceptOrderHandler updates a pending order’s status to "processing".
+func AcceptOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
 		orderID, err := strconv.Atoi(idStr)
@@ -128,17 +127,84 @@ func PermitOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Ensure the order is in a status that can be permitted.
+		// Only allow update if current status is "Pending"
 		if order.Status != "Pending" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Order is not pending approval"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Order is not in pending state"})
 			return
 		}
 
-		order.Status = "Permitted"
+		order.Status = "Processing"
 		if err := db.Save(&order).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order status"})
 			return
 		}
+
+		c.JSON(http.StatusOK, order)
+	}
+}
+
+// DeliverOrderHandler marks an order as delivered.
+// For example, it validates that the order is in processing state before updating.
+func DeliverOrderHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		orderID, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order id"})
+			return
+		}
+
+		var order models.Order
+		if err := db.First(&order, orderID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+			return
+		}
+
+		// Allow only orders in processing state to be marked delivered.
+		if order.Status != "Processing" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Order is not in processing state"})
+			return
+		}
+
+		order.Status = "Delivered"
+		if err := db.Save(&order).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order status"})
+			return
+		}
+
+		c.JSON(http.StatusOK, order)
+	}
+}
+
+// CompleteOrderHandler marks an order as completed.
+// It validates that the order is in the delivered state before updating.
+func CompleteOrderHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		idStr := c.Param("id")
+		orderID, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order id"})
+			return
+		}
+
+		var order models.Order
+		if err := db.First(&order, orderID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+			return
+		}
+
+		// Allow only orders in Delivered state to be completed.
+		if order.Status != "Delivered" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Order is not in delivered state"})
+			return
+		}
+
+		order.Status = "Completed"
+		if err := db.Save(&order).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order status"})
+			return
+		}
+
 		c.JSON(http.StatusOK, order)
 	}
 }
