@@ -6,7 +6,7 @@ export default function TermsPage() {
       <h1 className="text-3xl font-bold mb-4">Terms of Service</h1>
       <p><strong>Last Updated:</strong> 2025/04/01</p>
       <p className="mt-4">
-        Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the App. By accessing or using the App, you agree to be bound by these Terms.
+        Please read these Terms of Service (&quot;Terms&quot;, &quot;Terms of Service&quot;) carefully before using the App. By accessing or using the App, you agree to be bound by these Terms.
       </p>
       <h2 className="text-2xl font-bold mt-6">Use of the App</h2>
       <p className="mt-2">
@@ -24,7 +24,7 @@ export default function TermsPage() {
       </p>
       <h2 className="text-2xl font-bold mt-6">Disclaimer</h2>
       <p className="mt-2">
-        The App is provided "as is" without any warranties, and the developer is not liable for any damages arising from its use.
+        The App is provided &quot;as is&quot; without any warranties, and the developer is not liable for any damages arising from its use.
       </p>
       <h2 className="text-2xl font-bold mt-6">Governing Law</h2>
       <p className="mt-2">
@@ -40,7 +40,7 @@ export default function TermsPage() {
       </p>
       <h2 className="text-2xl font-bold mt-6">Contact Us</h2>
       <p className="mt-2">
-        If you have any questions about these Terms, please contact us through the App's support channels.
+        If you have any questions about these Terms, please contact us through the App&apos;s support channels.
       </p>
     </div>
   );

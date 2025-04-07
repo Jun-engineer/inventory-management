@@ -99,8 +99,8 @@ export default function PurchasePage() {
     return supplierMatch && nameMatch && priceMatch;
   });
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    let aVal = a[sortField];
-    let bVal = b[sortField];
+    const aVal = a[sortField];
+    const bVal = b[sortField];
     if (typeof aVal === "number" && typeof bVal === "number") {
       return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
     }
