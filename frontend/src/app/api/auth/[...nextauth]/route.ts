@@ -67,14 +67,17 @@ const authOptions: NextAuthOptions = {
     }
   },
   callbacks: {
+    // In your jwt callback:
     async jwt({ token, user }) {
       // When first signing in, user will be defined.
       if (user) {
-        token.token = user.token; // backend's JWT token
-        token.email = user.email;
+        if (user.token) {
+          token.token = user.token; // backend's JWT token
+        }
+        token.email = user.email ?? undefined;
         // Decode the backend token to get the companyID claim.
         try {
-          const decoded = jwt.verify(user.token, process.env.NEXTAUTH_SECRET!) as jwt.JwtPayload;
+          const decoded = jwt.verify(user.token!, process.env.NEXTAUTH_SECRET!) as jwt.JwtPayload;
           if (decoded && decoded.companyID) {
             token.companyID = decoded.companyID;
           }
