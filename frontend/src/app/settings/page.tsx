@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Tabs, { Tab } from "../components/Tabs";
 
 interface CompanySettings {
@@ -242,23 +242,20 @@ export default function SettingsPage() {
     },
   ];
 
-  // Optional: Manage active tab based on URL hash.
-  const updateTabFromHash = () => {
-    if (window.location.hash) {
-      const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
-      const index = tabs.findIndex(
-        (tab) => tab.label.toLowerCase() === hash.toLowerCase()
-      );
-      if (index !== -1) setInitialTab(index);
-    }
-  };
+  // Wrap updateTabFromHash so it’s stable:
+const updateTabFromHash = useCallback(() => {
+  if (window.location.hash) {
+    const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
+    const index = tabs.findIndex((tab) => tab.label.toLowerCase() === hash.toLowerCase());
+    if (index !== -1) setInitialTab(index);
+  }
+}, [tabs]);
 
-  useEffect(() => {
-    updateTabFromHash();
-    window.addEventListener("hashchange", updateTabFromHash);
-    return () =>
-      window.removeEventListener("hashchange", updateTabFromHash);
-  }, [tabs]);
+useEffect(() => {
+  updateTabFromHash();
+  window.addEventListener("hashchange", updateTabFromHash);
+  return () => window.removeEventListener("hashchange", updateTabFromHash);
+}, [updateTabFromHash]);
 
   return (
     <div className="p-6">
