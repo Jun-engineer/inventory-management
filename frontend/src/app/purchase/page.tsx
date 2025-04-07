@@ -397,7 +397,7 @@ export default function PurchasePage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Purchase Page</h1>
-        <Link href="/cart">
+        <Link href="/purchase/cart">
           <button className="flex items-center border px-4 py-2">
             🛒 Cart ({cartItems.reduce((total, item) => total + item.quantity, 0)})
           </button>
