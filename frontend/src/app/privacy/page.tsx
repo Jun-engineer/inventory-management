@@ -1,4 +1,4 @@
-'use client';
+&APOS;use client&APOS;;
 
 export default function PrivacyPage() {
   return (
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
       </p>
       <h2 className="text-2xl font-bold mt-6">Contact Us</h2>
       <p className="mt-2">
-        If you have any questions about this Privacy Policy, please contact us through the App's contact details.
+        If you have any questions about this Privacy Policy, please contact us through the App&APOS;s contact details.
       </p>
     </div>
   );

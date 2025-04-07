@@ -8,7 +8,7 @@ import AddWarehouse from "./register/page";
 import DeleteWarehouse from "./delete/page";
 
 export default function WarehousePage() {
-  const [initialTab, setInitialTab] = useState(0);
+  const [initialTab] = useState(0);
   const tabs: Tab[] = [
     { label: "Warehouse List", content: <WarehouseList /> },
     { label: "Warehouse Update", content: <WarehouseUpdate /> },
