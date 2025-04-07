@@ -15,7 +15,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "email@example.com" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         // call my Gin backend login API
         const res = await fetch("http://localhost/api/login/", {
           method: "POST",
@@ -55,14 +55,14 @@ export const authOptions: NextAuthOptions = {
   },
   jwt: {
     async encode({ token, secret }) {
-      return require("jsonwebtoken").sign(token, secret, { algorithm: "HS256" });
+      return jwt.sign(token, secret, { algorithm: "HS256" });
     },
     async decode({ token, secret }) {
-      return require("jsonwebtoken").verify(token, secret, { algorithms: ["HS256"] });
+      return jwt.verify(token, secret, { algorithms: ["HS256"] });
     }
   },
   callbacks: {
-    async jwt({ token, user, secret }) {
+    async jwt({ token, user }) {
       // When first signing in, user will be defined.
       if (user) {
         token.token = user.token; // backend's JWT token

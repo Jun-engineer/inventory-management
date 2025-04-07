@@ -15,7 +15,7 @@ interface FilterHeaderProps<T> {
   onCloseFilterPopup: () => void;
 }
 
-export default function FilterHeader<T extends {}>({
+export default function FilterHeader<T extends object>({
   field,
   title,
   sortField,

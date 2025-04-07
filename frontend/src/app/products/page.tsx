@@ -8,7 +8,7 @@ import ProductRegister from "./register/page";
 import ProductDelete from "./delete/page";
 
 export default function ProductsPage() {
-  const [initialTab, setInitialTab] = useState(0);
+  const [initialTab] = useState(0);
 
   const tabs: Tab[] = [
     { label: "Product List", content: <ProductList /> },

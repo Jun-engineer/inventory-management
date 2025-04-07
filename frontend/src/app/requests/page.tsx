@@ -6,7 +6,7 @@ import SendRequest from "./send/page";
 import PermissionSearch from "./search/page";
 
 export default function RequestPage() {
-  const [initialTab, setInitialTab] = useState(0);
+  const [initialTab] = useState(0);
 
   const tabs: Tab[] = [
     { label: "Send Request", content: <SendRequest />, },

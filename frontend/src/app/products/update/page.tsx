@@ -14,12 +14,6 @@ interface Product {
   supplier_id: number;
 }
 
-interface Warehouse {
-  id: number;
-  warehouse_name: string;
-  location: string;
-}
-
 export default function ProductUpdate() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
