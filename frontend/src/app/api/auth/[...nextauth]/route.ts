@@ -62,7 +62,7 @@ const authOptions: NextAuthOptions = {
       if (!secret) {
         throw new Error("Secret is undefined");
       }
-      return jwt.verify(token, secret, { algorithms: ["HS256"] });
+      return jwt.verify(token, secret!, { algorithms: ["HS256"] });
     }
   },
   callbacks: {
