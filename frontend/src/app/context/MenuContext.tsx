@@ -1,10 +1,8 @@
-'use client';
-
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from "react";
 
 interface MenuContextValue {
   menuOpen: boolean;
-  setMenuOpen: (open: boolean) => void;
+  setMenuOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const MenuContext = createContext<MenuContextValue | undefined>(undefined);
