@@ -44,6 +44,7 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 	orderRoutes(r, db)
 	salesRoutes(r, db)
 	settingsRoutes(r, db)
+	costRoutes(r, db)
 
 	return r
 }
@@ -131,5 +132,13 @@ func settingsRoutes(r *gin.Engine, db *gorm.DB) {
 		settings.GET("/", middleware.AuthMiddleware(), handlers.GetSettingsHandler(db))
 		settings.PUT("/update", middleware.AuthMiddleware(), handlers.UpdateSettingsHandler(db))
 		settings.PUT("/password", middleware.AuthMiddleware(), handlers.ChangeCompanyPasswordHandler(db))
+	}
+}
+
+func costRoutes(r *gin.Engine, db *gorm.DB) {
+	costs := r.Group("/api/costs")
+	{
+			// GET /api/costs returns the aggregated cost management data.
+			costs.GET("/", middleware.AuthMiddleware(), handlers.GetCostDataHandler(db))
 	}
 }
