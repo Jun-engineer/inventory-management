@@ -52,7 +52,7 @@ export default function FilterHeader<T extends object>({
           <input
             type="text"
             placeholder={`Filter by ${title}`}
-            value={filters[field] as string}
+            value={filters[field as string] || ""}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => onFilterChange(field, e.target.value)}
             onKeyDown={(e) => {
