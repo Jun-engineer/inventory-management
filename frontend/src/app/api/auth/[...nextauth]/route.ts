@@ -59,10 +59,11 @@ const authOptions: NextAuthOptions = {
       return jwt.sign(token, secret, { algorithm: "HS256" });
     },
     async decode({ token, secret }) {
-      if (!secret) {
-        throw new Error("Secret is undefined");
+      if (!token) {
+        throw new Error("Token is undefined");
       }
-      return jwt.verify(token, secret!, { algorithms: ["HS256"] });
+      const decoded = jwt.verify(token as string, secret!, { algorithms: ["HS256"] });
+      return decoded as unknown as Record<string, unknown>;
     }
   },
   callbacks: {
