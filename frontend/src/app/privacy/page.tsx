@@ -1,4 +1,4 @@
-&APOS;use client&APOS;;
+'use client';
 
 export default function PrivacyPage() {
   return (
