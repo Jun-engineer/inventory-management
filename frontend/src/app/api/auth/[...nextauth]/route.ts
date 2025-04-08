@@ -15,7 +15,7 @@ const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         // call my Gin backend login API
-        const res = await fetch("http://localhost/api/login/", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/login/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

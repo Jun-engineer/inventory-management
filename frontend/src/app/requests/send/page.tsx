@@ -9,7 +9,7 @@ export default function SendRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/requests`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
