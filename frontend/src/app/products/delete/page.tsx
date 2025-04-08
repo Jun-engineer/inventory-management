@@ -15,7 +15,7 @@ export default function ProductDelete() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch("/api/products", { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch products");
