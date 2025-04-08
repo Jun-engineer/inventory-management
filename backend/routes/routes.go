@@ -138,7 +138,7 @@ func settingsRoutes(r *gin.Engine, db *gorm.DB) {
 func costRoutes(r *gin.Engine, db *gorm.DB) {
 	costs := r.Group("/api/costs")
 	{
-			// GET /api/costs returns the aggregated cost management data.
-			costs.GET("/", middleware.AuthMiddleware(), handlers.GetCostDataHandler(db))
+		// GET /api/costs returns the aggregated cost management data.
+		costs.GET("/", middleware.AuthMiddleware(), handlers.GetCostDataHandler(db))
 	}
 }
