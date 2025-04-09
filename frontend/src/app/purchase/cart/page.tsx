@@ -37,7 +37,7 @@ export default function CartPage() {
       })),
     };
   
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderPayload),
