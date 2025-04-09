@@ -30,7 +30,7 @@ export default function ProductUpdate() {
 
   // Fetch products list
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/`, { credentials: 'include' })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error('Error fetching products', err));
@@ -39,7 +39,7 @@ export default function ProductUpdate() {
   // When a product is selected, fetch its details
   useEffect(() => {
     if (selectedProductId) {
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${selectedProductId}/`, { credentials: 'include' })
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${selectedProductId}`, { credentials: 'include' })
         .then((res) => res.json())
         .then((data: Product) => {
           setProductName(data.product_name);
@@ -65,7 +65,7 @@ export default function ProductUpdate() {
     };
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${selectedProductId}/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/${selectedProductId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

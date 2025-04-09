@@ -12,7 +12,7 @@ export default function WarehouseUpdate() {
 
   // Fetch warehouse list for the dropdown.
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/`, { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch warehouses");
@@ -26,7 +26,7 @@ export default function WarehouseUpdate() {
   // When a warehouse is selected, populate form with its details.
   useEffect(() => {
     if (selectedWarehouseId) {
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/${selectedWarehouseId}/`, { credentials: "include" })
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/${selectedWarehouseId}`, { credentials: "include" })
         .then((res) => {
           if (!res.ok) {
             throw new Error("Failed to fetch warehouse details");
@@ -46,7 +46,7 @@ export default function WarehouseUpdate() {
     if (!selectedWarehouseId) return;
     const data = { warehouse_name: warehouseName, location };
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/${selectedWarehouseId}/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/${selectedWarehouseId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
