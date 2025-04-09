@@ -37,7 +37,7 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings`, { credentials: "include" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings/`, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           setSettings({
@@ -73,7 +73,7 @@ export default function SettingsPage() {
   const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings/update`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings/update/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -93,7 +93,7 @@ export default function SettingsPage() {
   const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings/password`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/settings/password/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

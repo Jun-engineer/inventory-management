@@ -25,7 +25,7 @@ export default function SalesPage() {
   useEffect(() => {
     async function fetchSales() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/sales`, { credentials: "include" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/sales/`, { credentials: "include" });
         if (res.ok) {
           const orders = await res.json();
           setSalesOrders(orders);
@@ -57,7 +57,7 @@ export default function SalesPage() {
   const acceptOrder = async (orderId?: number) => {
     if (!orderId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/accept`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/accept/`, {
         method: "PUT",
         credentials: "include",
       });
@@ -82,7 +82,7 @@ export default function SalesPage() {
   const completeOrder = async (orderId?: number) => {
     if (!orderId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/complete`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/complete/`, {
         method: "PUT",
         credentials: "include",
       });
