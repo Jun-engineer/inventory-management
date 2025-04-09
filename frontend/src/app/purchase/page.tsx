@@ -62,7 +62,7 @@ export default function PurchasePage() {
 
   // Fetch products on mount
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/purchase-products`, { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/purchase-products/`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("Error fetching purchase products", err));
@@ -77,7 +77,7 @@ export default function PurchasePage() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`, { credentials: "include" });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/`, { credentials: "include" });
         if (res.ok) {
           const orders = await res.json();
           setOrderHistory(orders);
@@ -153,7 +153,7 @@ export default function PurchasePage() {
         quantity: item.quantity,
       })),
     };
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderPayload),
@@ -164,7 +164,7 @@ export default function PurchasePage() {
       setCartItems([]);
       localStorage.removeItem("cartItems");
       // Optionally refresh the order history:
-      const ordersRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders`, { credentials: "include" });
+      const ordersRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/`, { credentials: "include" });
       if (ordersRes.ok) {
         const orders = await ordersRes.json();
         setOrderHistory(orders);
@@ -192,7 +192,7 @@ export default function PurchasePage() {
   const deliverOrder = async (orderId?: number) => {
     if (!orderId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/deliver`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/${orderId}/deliver/`, {
         method: "PUT",
         credentials: "include",
       });
