@@ -23,7 +23,7 @@ export default function PermissionSearch() {
       if (email) queryParams.append("email", email);
       if (phone) queryParams.append("phone", phone);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests/search?${queryParams.toString()}`, { credentials: "include" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests/search?${queryParams.toString()}/`, { credentials: "include" });
       if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
       setResults(data);
@@ -35,7 +35,7 @@ export default function PermissionSearch() {
 
   const handlePermit = async (requestId: number) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests/${requestId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/requests/${requestId}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
