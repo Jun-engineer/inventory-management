@@ -21,7 +21,7 @@ export default function ProductRegister() {
 
   // Fetch warehouse list from backend
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/`, { credentials: 'include' })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setWarehouses(data))
       .catch((err) => console.error('Error fetching warehouses', err));
@@ -66,7 +66,7 @@ export default function ProductRegister() {
     };
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/register/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

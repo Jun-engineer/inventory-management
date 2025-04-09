@@ -30,7 +30,7 @@ export default function ProductList() {
   const [filterPopup, setFilterPopup] = useState<{ field: keyof Product } | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products/`, { credentials: "include" })
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/products`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("Error fetching products", err));
