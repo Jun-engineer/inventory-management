@@ -9,7 +9,7 @@ export default function DeleteWarehouse() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/`, { credentials: "include" })
+    fetch(`/api/warehouses/`, { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setWarehouses(data))
       .catch((err) => console.error("Error fetching warehouses:", err));
@@ -18,7 +18,7 @@ export default function DeleteWarehouse() {
   const handleDelete = async () => {
     if (!selectedWarehouseId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/${selectedWarehouseId}/`, {
+      const res = await fetch(`/api/warehouses/${selectedWarehouseId}/`, {
         method: "DELETE",
         credentials: "include",
       });

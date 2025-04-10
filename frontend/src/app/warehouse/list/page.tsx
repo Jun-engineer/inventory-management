@@ -13,7 +13,7 @@ export default function WarehouseList() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/warehouses/`, { credentials: "include" })
+    fetch("/api/warehouses/", { credentials: "include" })
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch warehouses");
