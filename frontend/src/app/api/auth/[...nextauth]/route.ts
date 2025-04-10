@@ -51,17 +51,6 @@ const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "lax" : undefined,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
   jwt: {
     async encode({ token, secret }) {
       if (!token) {
