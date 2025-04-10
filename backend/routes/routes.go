@@ -53,10 +53,10 @@ func SetupRoutes(db *gorm.DB) *gin.Engine {
 func authRoutes(r *gin.Engine, db *gorm.DB) {
 	auth := r.Group("/api")
 	{
-		auth.POST("/login", handlers.LoginHandler(db))
-		auth.POST("/register", handlers.RegisterHandler(db))
-		auth.PUT("/user/password", middleware.AuthMiddleware(), handlers.ChangePasswordHandler(db))
-		auth.DELETE("/user", middleware.AuthMiddleware(), handlers.DeleteAccountHandler(db))
+		auth.POST("/login/", handlers.LoginHandler(db))
+		auth.POST("/register/", handlers.RegisterHandler(db))
+		auth.PUT("/user/password/", middleware.AuthMiddleware(), handlers.ChangePasswordHandler(db))
+		auth.DELETE("/user/", middleware.AuthMiddleware(), handlers.DeleteAccountHandler(db))
 		auth.GET("/protected/", middleware.AuthMiddleware(), func(c *gin.Context) {
 			email := c.GetString("email")
 			c.JSON(http.StatusOK, gin.H{
@@ -71,10 +71,10 @@ func productRoutes(r *gin.Engine, db *gorm.DB) {
 	products := r.Group("/api/products")
 	{
 		products.GET("/", middleware.AuthMiddleware(), handlers.GetProductsHandler(db))
-		products.GET("/:id", middleware.AuthMiddleware(), handlers.GetProductHandler(db))
-		products.POST("/register", middleware.AuthMiddleware(), handlers.RegisterProductHandler(db))
-		products.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateProductHandler(db))
-		products.DELETE("/:id", middleware.AuthMiddleware(), handlers.DeleteProductHandler(db))
+		products.GET("/:id/", middleware.AuthMiddleware(), handlers.GetProductHandler(db))
+		products.POST("/register/", middleware.AuthMiddleware(), handlers.RegisterProductHandler(db))
+		products.PUT("/:id/", middleware.AuthMiddleware(), handlers.UpdateProductHandler(db))
+		products.DELETE("/:id/", middleware.AuthMiddleware(), handlers.DeleteProductHandler(db))
 	}
 }
 
@@ -83,10 +83,10 @@ func warehouseRoutes(r *gin.Engine, db *gorm.DB) {
 	warehouses := r.Group("/api/warehouses")
 	{
 		warehouses.GET("/", middleware.AuthMiddleware(), handlers.GetWarehousesHandler(db))
-		warehouses.GET("/:id", middleware.AuthMiddleware(), handlers.GetWarehouseHandler(db))
-		warehouses.PUT("/:id", middleware.AuthMiddleware(), handlers.UpdateWarehouseHandler(db))
+		warehouses.GET("/:id/", middleware.AuthMiddleware(), handlers.GetWarehouseHandler(db))
+		warehouses.PUT("/:id/", middleware.AuthMiddleware(), handlers.UpdateWarehouseHandler(db))
 		warehouses.POST("/", middleware.AuthMiddleware(), handlers.AddWarehouseHandler(db))
-		warehouses.DELETE("/:id", middleware.AuthMiddleware(), handlers.DeleteWarehouseHandler(db))
+		warehouses.DELETE("/:id/", middleware.AuthMiddleware(), handlers.DeleteWarehouseHandler(db))
 	}
 }
 
@@ -95,9 +95,9 @@ func permissionRequestRoutes(r *gin.Engine, db *gorm.DB) {
 	permissionRequests := r.Group("/api/requests")
 	{
 		permissionRequests.GET("/", middleware.AuthMiddleware(), handlers.GetPermissionRequestsHandler(db))
-		permissionRequests.GET("/search", middleware.AuthMiddleware(), handlers.SearchPermissionRequestsHandler(db))
+		permissionRequests.GET("/search/", middleware.AuthMiddleware(), handlers.SearchPermissionRequestsHandler(db))
 		permissionRequests.POST("/", middleware.AuthMiddleware(), handlers.SendPermissionRequestHandler(db))
-		permissionRequests.PUT("/:requestId", middleware.AuthMiddleware(), handlers.UpdatePermissionRequestHandler(db))
+		permissionRequests.PUT("/:requestId/", middleware.AuthMiddleware(), handlers.UpdatePermissionRequestHandler(db))
 	}
 }
 
@@ -113,9 +113,9 @@ func orderRoutes(r *gin.Engine, db *gorm.DB) {
 	{
 		orders.POST("/", middleware.AuthMiddleware(), handlers.CreateOrderHandler(db))
 		orders.GET("/", middleware.AuthMiddleware(), handlers.GetOrdersHandler(db))
-		orders.PUT("/:id/accept", middleware.AuthMiddleware(), handlers.AcceptOrderHandler(db))
-		orders.PUT("/:id/deliver", middleware.AuthMiddleware(), handlers.DeliverOrderHandler(db))
-		orders.PUT("/:id/complete", middleware.AuthMiddleware(), handlers.CompleteOrderHandler(db))
+		orders.PUT("/:id/accept/", middleware.AuthMiddleware(), handlers.AcceptOrderHandler(db))
+		orders.PUT("/:id/deliver/", middleware.AuthMiddleware(), handlers.DeliverOrderHandler(db))
+		orders.PUT("/:id/complete/", middleware.AuthMiddleware(), handlers.CompleteOrderHandler(db))
 	}
 }
 
@@ -130,8 +130,8 @@ func settingsRoutes(r *gin.Engine, db *gorm.DB) {
 	settings := r.Group("/api/settings")
 	{
 		settings.GET("/", middleware.AuthMiddleware(), handlers.GetSettingsHandler(db))
-		settings.PUT("/update", middleware.AuthMiddleware(), handlers.UpdateSettingsHandler(db))
-		settings.PUT("/password", middleware.AuthMiddleware(), handlers.ChangeCompanyPasswordHandler(db))
+		settings.PUT("/update/", middleware.AuthMiddleware(), handlers.UpdateSettingsHandler(db))
+		settings.PUT("/password/", middleware.AuthMiddleware(), handlers.ChangeCompanyPasswordHandler(db))
 	}
 }
 
