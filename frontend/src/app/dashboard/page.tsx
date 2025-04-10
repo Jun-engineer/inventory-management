@@ -31,7 +31,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchCostData() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/costs/`, {
+        const res = await fetch("/api/costs/", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
