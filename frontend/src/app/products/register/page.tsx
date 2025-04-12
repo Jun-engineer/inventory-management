@@ -47,53 +47,74 @@ export default function ProductRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Determine warehouse id:
-    // If user selects an existing warehouse, warehouse_id is parsed.
-    // If "add" is selected, warehouse_id will be 0.
-    const warehouseId = warehouse !== 'add' ? parseInt(warehouse) : 0;
-
-    const data = {
+  
+    let chosenWarehouseId = 0;
+  
+    // If "Add New Warehouse" is selected, register the new warehouse first.
+    if (warehouse === "add") {
+      try {
+        const resWarehouse = await fetch("/api/warehouses/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            warehouse_name: newWarehouseName,
+            location: newWarehouseLocation,
+          }),
+        });
+        if (!resWarehouse.ok) {
+          const errorWarehouse = await resWarehouse.json();
+          setMessage(errorWarehouse.error || "Failed to register warehouse.");
+          return;
+        }
+        const dataWarehouse = await resWarehouse.json();
+        // Assuming the backend returns the new warehouse id as dataWarehouse.id
+        chosenWarehouseId = dataWarehouse.id;
+      } catch (error) {
+        console.error("Warehouse registration error:", error);
+        setMessage("Failed to register warehouse.");
+        return;
+      }
+    } else {
+      chosenWarehouseId = parseInt(warehouse);
+    }
+  
+    const productData = {
       product_name: productName,
-      // Remove sku – it will be generated automatically in the backend.
-      price: parseFloat(price.replace(/,/g, '')),
-      quantity: parseInt(quantity.replace(/,/g, '')),
+      price: parseFloat(price.replace(/,/g, "")),
+      quantity: parseInt(quantity.replace(/,/g, "")),
       description,
-      warehouse_id: warehouseId,
-      new_warehouse_name: warehouse === 'add' ? newWarehouseName : undefined,
-      new_warehouse_location:
-        warehouse === 'add' ? newWarehouseLocation : undefined,
+      warehouse_id: chosenWarehouseId,
     };
-
+  
     try {
-      const res = await fetch("/api/products/register/", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data),
+      const resProduct = await fetch("/api/products/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(productData),
       });
-
-      if (res.ok) {
-        setMessage('Product registered successfully. Reloading page...');
-        // Reset the form fields
-        setProductName('');
-        setPrice('');
-        setQuantity('');
-        setDescription('');
-        setWarehouse('');
-        setNewWarehouseName('');
-        setNewWarehouseLocation('');
-        // Wait 3 seconds, then reload the page.
+  
+      if (resProduct.ok) {
+        setMessage("Product registered successfully. Reloading page...");
+        // Reset fields as needed.
+        setProductName("");
+        setPrice("");
+        setQuantity("");
+        setDescription("");
+        setWarehouse("");
+        setNewWarehouseName("");
+        setNewWarehouseLocation("");
         setTimeout(() => {
           window.location.reload();
         }, 3000);
       } else {
-        const errorData = await res.json();
-        setMessage(errorData.error || 'Error registering product.');
+        const errorData = await resProduct.json();
+        setMessage(errorData.error || "Error registering product.");
       }
     } catch (error) {
-      console.error('Error registering product:', error);
-      setMessage('Error registering product.');
+      console.error("Error registering product:", error);
+      setMessage("Error registering product.");
     }
   };
 
