@@ -33,8 +33,6 @@ const authOptions: NextAuthOptions = {
         // The backend returns JSON which includes a JWT token and user info.
         // For example: { email: "test@test.com", token: "..." }
         const data = await res.json();
-
-        // Return a user object that will be saved to the NextAuth JWT
         return { id: data.email, email: data.email, token: data.token };
       },
     }),
@@ -50,6 +48,7 @@ const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 8 * 3600, // 28800 seconds
   },
   cookies: {
     sessionToken: {
@@ -63,6 +62,7 @@ const authOptions: NextAuthOptions = {
     },
   },
   jwt: {
+    maxAge: 8 * 3600, // 28800 seconds
     async encode({ token, secret }) {
       if (!token) {
         throw new Error("Token is undefined");

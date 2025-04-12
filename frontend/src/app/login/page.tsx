@@ -130,6 +130,11 @@ export default function LoginPage() {
             <span className="text-blue-400 underline">here</span>
           </Link>.
         </p>
+        <p className="mt-4 text-center">
+          <Link href="/">
+            <span className="text-blue-400 underline">Back to Top</span>
+          </Link>
+        </p>
       </div>
     </div>
   );
