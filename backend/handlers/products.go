@@ -23,7 +23,7 @@ type ProductResponse struct {
 	SupplierName string  `json:"supplier_name"`
 }
 
-// GetProductsHandler retrieves the product list, joining inventory stock and warehouse data.
+// GetProductsHandler retrieves the product list for the owner.
 func GetProductsHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get the current (authenticated) company id.
@@ -42,8 +42,8 @@ func GetProductsHandler(db *gorm.DB) gin.HandlerFunc {
 		// Query only products owned by currentCompanyID.
 		err := db.Table("products").
 			Select(`products.id, products.product_name, products.sku, products.price, 
-			 inventory_stocks.quantity_in_stock as quantity, products.description, 
-			 warehouses.warehouse_name as warehouse`).
+                inventory_stocks.quantity_in_stock as quantity, products.description, 
+                warehouses.warehouse_name as warehouse`).
 			Joins("LEFT JOIN inventory_stocks ON inventory_stocks.product_id = products.id").
 			Joins("LEFT JOIN warehouses ON inventory_stocks.warehouse_id = warehouses.id").
 			Where("products.deleted_at IS NULL AND products.supplier_id = ?", currentCompanyID).
@@ -60,10 +60,9 @@ func GetProductsHandler(db *gorm.DB) gin.HandlerFunc {
 // RegisterProductHandler handles product registration.
 func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Define the expected request payload.
+		// Expected request payload.
 		var req struct {
-			ProductName string `json:"product_name"`
-			// Remove sku from the request – it will be auto-generated.
+			ProductName          string  `json:"product_name"`
 			Description          string  `json:"description"`
 			Price                float64 `json:"price"`
 			Quantity             uint    `json:"quantity"`
@@ -77,15 +76,15 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Basic product validation.
+		// Basic validation.
 		if req.ProductName == "" || req.Price <= 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required product fields or invalid values"})
 			return
 		}
 
-		// If warehouse_id is 0, then the user wants to add a new warehouse.
 		var warehouseID uint = req.WarehouseID
 		var warehouseRecord models.Warehouse
+		// If warehouse_id is 0, add a new warehouse.
 		if req.WarehouseID == 0 {
 			if req.NewWarehouseName == "" {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "New warehouse name is required"})
@@ -109,7 +108,7 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 
-		// Get the authenticated company ID from context.
+		// Get authenticated company id.
 		companyIDVal, exists := c.Get("companyID")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
@@ -121,17 +120,17 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Count how many products already exist in this warehouse.
+		// Count existing products in this warehouse.
 		var count int64
 		db.Table("inventory_stocks").
 			Where("warehouse_id = ?", warehouseID).
 			Count(&count)
 		productNumber := int(count) + 1
 
-		// Generate SKU automatically using only warehouse info and product number.
+		// Generate SKU automatically.
 		generatedSKU := utils.GenerateSKU(warehouseRecord.ID, warehouseRecord.WarehouseName, productNumber)
 
-		// Create product record using supplierID from the authenticated company.
+		// Create product record.
 		product := models.Products{
 			ProductName: req.ProductName,
 			Sku:         generatedSKU,
@@ -163,7 +162,7 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// GetProductHandler retrieves a single product (with inventory and warehouse info) by id.
+// GetProductHandler retrieves a single product by id.
 func GetProductHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -195,10 +194,10 @@ func GetProductHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// UpdateProductHandler updates product and its inventory info.
+// UpdateProductHandler updates product and its inventory.
 func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get product id from URL parameter.
+		// Get product id.
 		idParam := c.Param("id")
 		productID, err := strconv.Atoi(idParam)
 		if err != nil {
@@ -206,8 +205,6 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Define the expected request payload.
-		// Note: we allow a warehouse_id but if it's 0, we won't update it.
 		var req struct {
 			ProductName string  `json:"product_name"`
 			Sku         string  `json:"sku"`
@@ -222,7 +219,7 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Update the product record.
+		// Update product.
 		var product models.Products
 		if err := db.First(&product, productID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
@@ -238,22 +235,16 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Update the inventory stock record.
+		// Update inventory stock.
 		var stock models.InventoryStock
 		if err := db.Where("product_id = ?", product.ID).First(&stock).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Inventory record not found"})
 			return
 		}
-
-		// Only update the quantity.
 		stock.QuantityInStock = req.Quantity
-
-		// If a valid warehouse id is provided (non-zero), update it.
 		if req.WarehouseID > 0 {
 			stock.WarehouseID = req.WarehouseID
 		}
-		// Otherwise, leave the warehouse_id unchanged.
-
 		if err := db.Save(&stock).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update inventory record"})
 			return
@@ -263,7 +254,7 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// DeleteProductHandler deletes a product by id.
+// DeleteProductHandler deletes a product.
 func DeleteProductHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idParam := c.Param("id")
@@ -272,27 +263,24 @@ func DeleteProductHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product id"})
 			return
 		}
-
 		var product models.Products
 		if err := db.First(&product, productID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 			return
 		}
-
-		// Delete the product (soft-delete if gorm.Model is embedded)
 		if err := db.Delete(&product).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
 			return
 		}
-
 		c.JSON(http.StatusOK, gin.H{"message": "Product deleted successfully"})
 	}
 }
 
-// GetPurchaseProductsHandler returns products owned by other companies.
+// GetPurchaseProductsHandler returns products from other companies
+// only if a permission request exists (with status "permitted") between the seller and the current buyer.
 func GetPurchaseProductsHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get current authenticated company id.
+		// Get authenticated company id (buyer).
 		companyVal, exists := c.Get("companyID")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -305,15 +293,17 @@ func GetPurchaseProductsHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var products []ProductResponse
+		// Return only products not owned by current user that have
+		// a matching permission request with status "permitted".
 		err := db.Table("products").
 			Select(`products.id, products.product_name, products.sku, products.price, 
-							inventory_stocks.quantity_in_stock as quantity, products.description, 
-							warehouses.warehouse_name as warehouse,
-							companies.name as supplier_name`).
+                inventory_stocks.quantity_in_stock as quantity, products.description, 
+                warehouses.warehouse_name as warehouse,
+                companies.name as supplier_name`).
 			Joins("LEFT JOIN inventory_stocks ON inventory_stocks.product_id = products.id").
 			Joins("LEFT JOIN warehouses ON inventory_stocks.warehouse_id = warehouses.id").
 			Joins("LEFT JOIN companies ON companies.id = products.supplier_id").
-			// Only return products from companies other than the current one.
+			Joins("JOIN permission_requests ON permission_requests.seller_id = products.supplier_id AND permission_requests.requester_id = ? AND permission_requests.status = ?", currentCompanyID, "permitted").
 			Where("products.deleted_at IS NULL AND products.supplier_id <> ?", currentCompanyID).
 			Find(&products).Error
 
