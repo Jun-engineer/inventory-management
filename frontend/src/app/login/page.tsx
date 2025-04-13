@@ -38,7 +38,7 @@ export default function LoginPage() {
     }
   };
 
-  // Login with OAuth providers
+  /*
   const handleGoogleLogin = async () => {
     await signIn("google", { callbackUrl: "/dashboard" });
   };
@@ -46,6 +46,7 @@ export default function LoginPage() {
   const handleGitHubLogin = async () => {
     await signIn("github", { callbackUrl: "/dashboard" });
   };
+  */
 
   return (
     <div className="flex items-start justify-center bg-white p-6">
@@ -76,12 +77,12 @@ export default function LoginPage() {
           </button>
           {errorMsg && <p className="text-center text-red-400">{errorMsg}</p>}
         </form>
+        {/* 
         <div className="flex flex-col space-y-4 mt-10 mb-6">
           <button
             onClick={handleGoogleLogin}
             className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 rounded-md transition flex items-center justify-center"
           >
-            {/* Official Google mark */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-5 h-5 mr-2"
@@ -111,7 +112,6 @@ export default function LoginPage() {
             onClick={handleGitHubLogin}
             className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-md transition flex items-center justify-center"
           >
-            {/* Official GitHub mark */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="w-5 h-5 mr-2"
@@ -122,6 +122,7 @@ export default function LoginPage() {
             Login with Github
           </button>
         </div>
+        */}
         <p className="text-center">
           You do not have an account?
           <br />
