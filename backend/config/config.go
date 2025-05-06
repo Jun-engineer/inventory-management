@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"backend/models"
@@ -12,8 +13,10 @@ import (
 )
 
 func InitEnv() error {
-	if err := godotenv.Load(); err != nil {
-		return fmt.Errorf("failed to load .env file: %v", err)
+	if os.Getenv("ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: No .env file found, using environment variables from the system")
+		}
 	}
 	return nil
 }
