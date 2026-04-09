@@ -96,8 +96,8 @@ export default function ProductRegister() {
       });
   
       if (resProduct.ok) {
-        setMessage("Product registered successfully. Reloading page...");
-        // Reset fields as needed.
+        setMessage("Product registered successfully.");
+        // Reset fields.
         setProductName("");
         setPrice("");
         setQuantity("");
@@ -105,9 +105,11 @@ export default function ProductRegister() {
         setWarehouse("");
         setNewWarehouseName("");
         setNewWarehouseLocation("");
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        // Refresh warehouse list.
+        fetch("/api/warehouses/", { credentials: 'include' })
+          .then((res) => res.json())
+          .then((data) => setWarehouses(data))
+          .catch(() => {});
       } else {
         const errorData = await resProduct.json();
         setMessage(errorData.error || "Error registering product.");

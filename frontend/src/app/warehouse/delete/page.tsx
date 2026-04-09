@@ -17,16 +17,19 @@ export default function DeleteWarehouse() {
 
   const handleDelete = async () => {
     if (!selectedWarehouseId) return;
+    if (!confirm("Are you sure you want to delete this warehouse? This action cannot be undone.")) return;
     try {
       const res = await fetch(`/api/warehouses/${selectedWarehouseId}/`, {
         method: "DELETE",
         credentials: "include",
       });
       if (res.ok) {
-        setMessage("Warehouse deleted successfully. Reloading page...");
-        setTimeout(() => window.location.reload(), 3000);
+        setMessage("Warehouse deleted successfully.");
+        setWarehouses((prev) => prev.filter((wh) => wh.id !== selectedWarehouseId));
+        setSelectedWarehouseId(null);
       } else {
-        setMessage("Error deleting warehouse.");
+        const errData = await res.json();
+        setMessage(errData.error || "Error deleting warehouse.");
       }
     } catch (error) {
       console.error("Error deleting warehouse:", error);

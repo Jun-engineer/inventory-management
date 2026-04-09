@@ -77,7 +77,9 @@ func CreateOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			Status:     "Pending", // New orders start with "Pending" status
 		}
 
-		if err := db.Create(&order).Error; err != nil {
+		if err := db.Transaction(func(tx *gorm.DB) error {
+			return tx.Create(&order).Error
+		}); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order"})
 			return
 		}
@@ -112,6 +114,7 @@ func GetOrdersHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 // AcceptOrderHandler updates a pending order’s status to "processing".
+// Only the seller (who owns products in the order) can accept.
 func AcceptOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
@@ -121,9 +124,32 @@ func AcceptOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var order models.Order
-		if err := db.First(&order, orderID).Error; err != nil {
+		if err := db.Preload("OrderItems").First(&order, orderID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+			return
+		}
+
+		// Verify that the authenticated user is the seller (owns at least one product in the order).
+		var sellerProductCount int64
+		db.Table("order_items").
+			Joins("JOIN products ON products.id = order_items.product_id").
+			Where("order_items.order_id = ? AND products.supplier_id = ?", orderID, companyID).
+			Count(&sellerProductCount)
+		if sellerProductCount == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the seller can accept this order"})
 			return
 		}
 
@@ -144,7 +170,7 @@ func AcceptOrderHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 // DeliverOrderHandler marks an order as delivered.
-// For example, it validates that the order is in processing state before updating.
+// Only the buyer (order owner) can mark it as delivered.
 func DeliverOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
@@ -154,9 +180,27 @@ func DeliverOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var order models.Order
 		if err := db.First(&order, orderID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+			return
+		}
+
+		// Verify that the authenticated user is the buyer.
+		if order.CompanyID != companyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the buyer can mark this order as delivered"})
 			return
 		}
 
@@ -177,7 +221,7 @@ func DeliverOrderHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 // CompleteOrderHandler marks an order as completed.
-// It validates that the order is in the delivered state before updating.
+// Only the seller (who owns products in the order) can complete it.
 func CompleteOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
@@ -187,9 +231,32 @@ func CompleteOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var order models.Order
 		if err := db.First(&order, orderID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+			return
+		}
+
+		// Verify that the authenticated user is the seller.
+		var sellerProductCount int64
+		db.Table("order_items").
+			Joins("JOIN products ON products.id = order_items.product_id").
+			Where("order_items.order_id = ? AND products.supplier_id = ?", orderID, companyID).
+			Count(&sellerProductCount)
+		if sellerProductCount == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only the seller can complete this order"})
 			return
 		}
 

@@ -110,6 +110,7 @@ export default function Register() {
               minLength={8}
               className="w-full p-3 rounded-md text-black border"
             />
+            <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters.</p>
           </div>
           <div>
             <button

@@ -21,6 +21,8 @@ interface Order {
 
 export default function SalesPage() {
   const [salesOrders, setSalesOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function fetchSales() {
@@ -34,6 +36,8 @@ export default function SalesPage() {
         }
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     }
     fetchSales();
@@ -62,16 +66,15 @@ export default function SalesPage() {
         credentials: "include",
       });
       if (res.ok) {
-        // Optionally refresh the orders
         const updatedOrder = await res.json();
-        // Replace the updated order in salesOrders state:
         setSalesOrders((prev) =>
           prev.map((order) =>
             order.id === updatedOrder.id ? updatedOrder : order
           )
         );
       } else {
-        alert("Failed to accept order.");
+        const errData = await res.json().catch(() => null);
+        setMessage(errData?.error || "Failed to accept order.");
       }
     } catch (error) {
       console.error("Error accepting order", error);
@@ -94,7 +97,8 @@ export default function SalesPage() {
           )
         );
       } else {
-        alert("Failed to complete order.");
+        const errData = await res.json().catch(() => null);
+        setMessage(errData?.error || "Failed to complete order.");
       }
     } catch (error) {
       console.error("Error completing order", error);
@@ -109,6 +113,7 @@ export default function SalesPage() {
   ) => {
     if (orders.length === 0) return <p>No orders available.</p>;
     return (
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -168,6 +173,7 @@ export default function SalesPage() {
           })}
         </tbody>
       </table>
+      </div>
     );
   };
 
@@ -193,7 +199,16 @@ export default function SalesPage() {
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Sales Page</h1>
-      <Tabs tabs={tabs} initialTabIndex={0} />
+      {message && (
+        <p className={`mb-4 text-center font-medium ${message.includes("Failed") ? "text-red-500" : "text-green-600"}`}>
+          {message}
+        </p>
+      )}
+      {loading ? (
+        <p className="text-gray-500">Loading sales data...</p>
+      ) : (
+        <Tabs tabs={tabs} initialTabIndex={0} />
+      )}
     </div>
   );
 }

@@ -16,10 +16,14 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o inventory-backend ./main.go
 
 # Final image stage
 FROM alpine:latest
-WORKDIR /root/
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+WORKDIR /home/appuser
 
 # Copy the built binary from the builder stage.
 COPY --from=builder /app/inventory-backend .
+
+# Switch to non-root user
+USER appuser
 
 # Expose the port your Gin app uses (e.g. 8080)
 EXPOSE 8080

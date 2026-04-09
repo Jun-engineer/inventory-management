@@ -17,8 +17,7 @@ export default function SendRequest() {
       });
       if (res.ok) {
         setMessage("Request sent successfully.");
-        // reload page after 2 seconds.
-        setTimeout(() => window.location.reload(), 2000);
+        setSellerEmail("");
       } else {
         const errData = await res.json();
         setMessage(errData.error || "Failed to send request.");

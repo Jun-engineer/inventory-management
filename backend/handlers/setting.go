@@ -58,19 +58,19 @@ func UpdateSettingsHandler(db *gorm.DB) gin.HandlerFunc {
 
 		var input CompanyUpdateInput
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Binding failed", "debug": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
 
 		var company models.Companies
 		if err := db.First(&company, companyID).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Company not found", "debug": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Company not found"})
 			return
 		}
 
 		// Validate current password.
 		if err := bcrypt.CompareHashAndPassword([]byte(company.PasswordHash), []byte(input.CurrentPassword)); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid current password", "debug": "password comparison failed"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid current password"})
 			return
 		}
 
@@ -80,7 +80,7 @@ func UpdateSettingsHandler(db *gorm.DB) gin.HandlerFunc {
 		company.Email = input.Email
 
 		if err := db.Save(&company).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings", "debug": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
 			return
 		}
 
@@ -111,32 +111,32 @@ func ChangeCompanyPasswordHandler(db *gorm.DB) gin.HandlerFunc {
 
 		var input CompanyChangePasswordInput
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Binding failed", "debug": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters and confirmation must match"})
 			return
 		}
 
 		var company models.Companies
 		if err := db.First(&company, companyID).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Company not found", "debug": err.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Company not found"})
 			return
 		}
 
 		// Validate current password.
 		if err := bcrypt.CompareHashAndPassword([]byte(company.PasswordHash), []byte(input.CurrentPassword)); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid current password", "debug": "password mismatch"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid current password"})
 			return
 		}
 
 		// Hash the new password.
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password", "debug": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password"})
 			return
 		}
 
 		company.PasswordHash = string(hashedPassword)
 		if err := db.Save(&company).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password", "debug": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
 			return
 		}
 

@@ -30,6 +30,7 @@ export default function WarehouseList() {
   return (
     <>
       {error && <p className="text-red-500">{error}</p>}
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -48,6 +49,7 @@ export default function WarehouseList() {
           ))}
         </tbody>
       </table>
+      </div>
     </>
   );
 }

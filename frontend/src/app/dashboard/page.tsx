@@ -14,6 +14,7 @@ interface CostData {
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [costData, setCostData] = useState<CostData>({
     completedSpent: 0,
     completedEarned: 0,
@@ -29,6 +30,7 @@ export default function Dashboard() {
 
   // Fetch cost data from backend.
   useEffect(() => {
+    if (!session) return;
     async function fetchCostData() {
       try {
         const res = await fetch("/api/costs/", {
@@ -43,6 +45,8 @@ export default function Dashboard() {
         setCostData(data);
       } catch (error) {
         console.error("Error fetching cost data:", error);
+      } finally {
+        setLoading(false);
       }
     }
     fetchCostData();
@@ -60,6 +64,14 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Please login.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-gray-500 text-lg">Loading dashboard...</p>
       </div>
     );
   }

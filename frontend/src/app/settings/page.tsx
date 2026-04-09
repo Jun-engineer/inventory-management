@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs, { Tab } from "../components/Tabs";
 
 interface CompanySettings {
@@ -32,6 +32,8 @@ export default function SettingsPage() {
     confirmPassword: "",
   });
   const [initialTab, setInitialTab] = useState(0);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
 
   // Fetch company settings on mount.
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function SettingsPage() {
   // Save updated profile, which requires currentPassword.
   const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    setProfileMessage("");
     try {
       const res = await fetch("/api/settings/update/", {
         method: "PUT",
@@ -80,18 +83,30 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       });
       if (res.ok) {
-        alert("Profile updated successfully!");
+        setProfileMessage("Profile updated successfully!");
+        setSettings(prev => ({ ...prev, currentPassword: "" }));
       } else {
-        alert("Failed to update profile.");
+        const errData = await res.json().catch(() => null);
+        setProfileMessage(errData?.error || "Failed to update profile.");
       }
     } catch (error) {
       console.error("Error updating profile", error);
+      setProfileMessage("An error occurred while updating profile.");
     }
   };
 
   // Change password.
   const handleSubmitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordMessage("");
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage("New passwords do not match.");
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      setPasswordMessage("New password must be at least 8 characters.");
+      return;
+    }
     try {
       const res = await fetch("/api/settings/password/", {
         method: "PUT",
@@ -100,14 +115,15 @@ export default function SettingsPage() {
         body: JSON.stringify(passwordData),
       });
       if (res.ok) {
-        alert("Password changed successfully!");
-        // Clear password fields.
+        setPasswordMessage("Password changed successfully!");
         setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       } else {
-        alert("Failed to change password.");
+        const errData = await res.json().catch(() => null);
+        setPasswordMessage(errData?.error || "Failed to change password.");
       }
     } catch (error) {
       console.error("Error changing password", error);
+      setPasswordMessage("An error occurred while changing password.");
     }
   };
 
@@ -190,6 +206,11 @@ export default function SettingsPage() {
             <button type="submit" className="border px-4 py-2 bg-blue-500 text-white">
               Save Profile
             </button>
+            {profileMessage && (
+              <p className={`mt-4 ${profileMessage.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+                {profileMessage}
+              </p>
+            )}
           </form>
         </div>
       ),
@@ -236,26 +257,31 @@ export default function SettingsPage() {
             <button type="submit" className="border px-4 py-2 bg-blue-500 text-white">
               Change Password
             </button>
+            {passwordMessage && (
+              <p className={`mt-4 ${passwordMessage.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+                {passwordMessage}
+              </p>
+            )}
           </form>
         </div>
       ),
     },
   ];
 
-  // Wrap updateTabFromHash so it’s stable:
-const updateTabFromHash = useCallback(() => {
-  if (window.location.hash) {
-    const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
-    const index = tabs.findIndex((tab) => tab.label.toLowerCase() === hash.toLowerCase());
-    if (index !== -1) setInitialTab(index);
-  }
-}, [tabs]);
+  const tabLabels = ["Profile", "Edit Profile", "Change Password"];
 
-useEffect(() => {
-  updateTabFromHash();
-  window.addEventListener("hashchange", updateTabFromHash);
-  return () => window.removeEventListener("hashchange", updateTabFromHash);
-}, [updateTabFromHash]);
+  useEffect(() => {
+    const updateTabFromHash = () => {
+      if (window.location.hash) {
+        const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
+        const index = tabLabels.findIndex((label) => label.toLowerCase() === hash.toLowerCase());
+        if (index !== -1) setInitialTab(index);
+      }
+    };
+    updateTabFromHash();
+    window.addEventListener("hashchange", updateTabFromHash);
+    return () => window.removeEventListener("hashchange", updateTabFromHash);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-6">

@@ -18,6 +18,7 @@ interface CartItem {
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [orderMessage, setOrderMessage] = useState("");
 
   // Load cart items from localStorage on mount.
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function CartPage() {
 
   const handleOrder = async () => {
     if (cartItems.length === 0) return;
+    setOrderMessage("");
   
     const orderPayload = {
       items: cartItems.map((item) => ({
@@ -41,15 +43,17 @@ export default function CartPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderPayload),
+      credentials: "include",
     });
   
     if (res.ok) {
-      alert("Order placed successfully!");
+      setOrderMessage("Order placed successfully!");
       // Clear cart items in state and localStorage:
       setCartItems([]);
       localStorage.removeItem("cartItems");
     } else {
-      alert("Failed to place order.");
+      const errData = await res.json().catch(() => null);
+      setOrderMessage(errData?.error || "Failed to place order.");
     }
   };
 
@@ -71,10 +75,16 @@ export default function CartPage() {
         <button className="border px-4 py-2 mb-4">Back</button>
       </Link>
       <h1 className="text-3xl font-bold mb-4">Your Cart</h1>
+      {orderMessage && (
+        <p className={`mb-4 ${orderMessage.includes("success") ? "text-green-600" : "text-red-600"}`}>
+          {orderMessage}
+        </p>
+      )}
       {cartItems.length === 0 ? (
         <p>Your cart is empty.</p>
       ) : (
         <>
+          <div className="overflow-x-auto">
           <table className="min-w-full border-collapse mb-4">
             <thead>
               <tr className="bg-gray-200">
@@ -106,6 +116,7 @@ export default function CartPage() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="flex justify-end items-center mb-4">
             <span className="mr-4 font-bold">Total: ${totalPrice.toFixed(2)}</span>
             <button

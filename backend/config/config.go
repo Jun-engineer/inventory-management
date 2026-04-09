@@ -25,8 +25,12 @@ func InitDB() (*gorm.DB, error) {
 	// Load database DSN from environment variables.
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		// Fallback DSN for development (adjust as needed).
+		if os.Getenv("ENV") == "production" {
+			return nil, fmt.Errorf("DATABASE_URL environment variable is required in production")
+		}
+		// Fallback DSN for local development only.
 		dsn = "host=localhost user=myuser password=mypassword dbname=inventory port=5432 sslmode=disable TimeZone=Asia/Tokyo"
+		log.Println("Warning: Using fallback development DATABASE_URL")
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

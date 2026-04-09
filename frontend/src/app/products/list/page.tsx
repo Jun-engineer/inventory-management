@@ -18,6 +18,7 @@ type SortOrder = "asc" | "desc";
 
 export default function ProductList() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState<keyof Product>("product_name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [filters, setFilters] = useState({
@@ -33,7 +34,8 @@ export default function ProductList() {
     fetch("/api/products/", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setProducts(data))
-      .catch((err) => console.error("Error fetching products", err));
+      .catch((err) => console.error("Error fetching products", err))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSort = (field: keyof Product) => {
@@ -88,6 +90,12 @@ export default function ProductList() {
 
   return (
     <div className="p-6">
+      {loading ? (
+        <p className="text-gray-500">Loading products...</p>
+      ) : sortedProducts.length === 0 ? (
+        <p className="text-gray-500">No products found. Register a product to get started.</p>
+      ) : (
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -165,6 +173,8 @@ export default function ProductList() {
           ))}
         </tbody>
       </table>
+      </div>
+      )}
     </div>
   );
 }

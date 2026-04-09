@@ -42,11 +42,31 @@ func GetWarehouseHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid warehouse id"})
 			return
 		}
+
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var warehouse models.Warehouse
 		if err := db.First(&warehouse, warehouseID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Warehouse not found"})
 			return
 		}
+
+		// Verify ownership.
+		if warehouse.CompanyID != companyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			return
+		}
+
 		c.JSON(http.StatusOK, warehouse)
 	}
 }
@@ -59,6 +79,18 @@ func UpdateWarehouseHandler(db *gorm.DB) gin.HandlerFunc {
 		warehouseID, err := strconv.Atoi(idParam)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid warehouse id"})
+			return
+		}
+
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
 			return
 		}
 
@@ -76,6 +108,12 @@ func UpdateWarehouseHandler(db *gorm.DB) gin.HandlerFunc {
 		var wh models.Warehouse
 		if err := db.First(&wh, warehouseID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Warehouse not found"})
+			return
+		}
+
+		// Verify ownership.
+		if wh.CompanyID != companyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only update your own warehouses"})
 			return
 		}
 
@@ -135,6 +173,29 @@ func DeleteWarehouseHandler(db *gorm.DB) gin.HandlerFunc {
 		warehouseID, err := strconv.Atoi(idParam)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid warehouse id"})
+			return
+		}
+
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		companyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
+		// Verify ownership.
+		var wh models.Warehouse
+		if err := db.First(&wh, warehouseID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Warehouse not found"})
+			return
+		}
+		if wh.CompanyID != companyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only delete your own warehouses"})
 			return
 		}
 

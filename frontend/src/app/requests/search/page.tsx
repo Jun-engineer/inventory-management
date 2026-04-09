@@ -51,8 +51,6 @@ export default function PermissionSearch() {
       setResults(prev =>
         prev.map(r => r.ID === requestId ? { ...r, status: "permitted" } : r)
       );
-      // Reload page after 3 seconds.
-      setTimeout(() => window.location.reload(), 3000);
     } catch (error) {
       console.error(error);
       setMessage("An error occurred.");
