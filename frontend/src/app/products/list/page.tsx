@@ -95,6 +95,7 @@ export default function ProductList() {
       ) : sortedProducts.length === 0 ? (
         <p className="text-gray-500">No products found. Register a product to get started.</p>
       ) : (
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -172,6 +173,7 @@ export default function ProductList() {
           ))}
         </tbody>
       </table>
+      </div>
       )}
     </div>
   );

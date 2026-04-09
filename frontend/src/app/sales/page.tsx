@@ -113,6 +113,7 @@ export default function SalesPage() {
   ) => {
     if (orders.length === 0) return <p>No orders available.</p>;
     return (
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -172,6 +173,7 @@ export default function SalesPage() {
           })}
         </tbody>
       </table>
+      </div>
     );
   };
 

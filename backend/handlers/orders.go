@@ -77,7 +77,9 @@ func CreateOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			Status:     "Pending", // New orders start with "Pending" status
 		}
 
-		if err := db.Create(&order).Error; err != nil {
+		if err := db.Transaction(func(tx *gorm.DB) error {
+			return tx.Create(&order).Error
+		}); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create order"})
 			return
 		}

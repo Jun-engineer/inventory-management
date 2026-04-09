@@ -224,6 +224,7 @@ export default function PurchasePage() {
   ) => {
     if (orders.length === 0) return <p>No orders available.</p>;
     return (
+      <div className="overflow-x-auto">
       <table className="min-w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -269,6 +270,7 @@ export default function PurchasePage() {
           })}
         </tbody>
       </table>
+      </div>
     );
   };
 
@@ -289,6 +291,7 @@ export default function PurchasePage() {
             <p className="text-gray-500">No products available for purchase. Send permission requests to sellers first.</p>
           ) : (
           /* Render product ordering table */
+          <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="bg-gray-200">
@@ -360,6 +363,7 @@ export default function PurchasePage() {
               ))}
             </tbody>
           </table>
+          </div>
           )}
           <div className="flex justify-end items-center my-4">
             <span className="mr-4 font-bold">

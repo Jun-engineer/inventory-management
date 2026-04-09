@@ -18,6 +18,17 @@ export const metadata: Metadata = {
   verification: {
     google: "DwcnOpKrTSiqtD-2Qrpb6NoDDp0FLHuxeq1i7vfuCfo",
   },
+  openGraph: {
+    title: "Inventory Management System",
+    description: "Track products, warehouses, orders, and sales in one place.",
+    type: "website",
+    locale: "en_US",
+    siteName: "Inventory Management System",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

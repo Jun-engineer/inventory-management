@@ -34,14 +34,14 @@ func GetCostDataHandler(db *gorm.DB) gin.HandlerFunc {
         if err := db.Model(&models.Order{}).
             Where("company_id = ? AND status = ?", companyID, "Completed").
             Select("COALESCE(SUM(total),0)").Row().Scan(&completedSpent); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate completed spending"})
             return
         }
         // Pending orders: all orders that are not "Completed"
         if err := db.Model(&models.Order{}).
             Where("company_id = ? AND status != ?", companyID, "Completed").
             Select("COALESCE(SUM(total),0)").Row().Scan(&pendingSpent); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate pending spending"})
             return
         }
 
@@ -54,7 +54,7 @@ func GetCostDataHandler(db *gorm.DB) gin.HandlerFunc {
             JOIN orders o ON oi.order_id = o.id
             WHERE p.supplier_id = ? AND o.status = ?`, companyID, "Completed").
             Row().Scan(&completedEarned); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate completed earnings"})
             return
         }
         // Pending Earned: for orders not completed.
@@ -65,7 +65,7 @@ func GetCostDataHandler(db *gorm.DB) gin.HandlerFunc {
             JOIN orders o ON oi.order_id = o.id
             WHERE p.supplier_id = ? AND o.status != ?`, companyID, "Completed").
             Row().Scan(&pendingEarned); err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate pending earnings"})
             return
         }
 

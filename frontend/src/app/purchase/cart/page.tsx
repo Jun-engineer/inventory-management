@@ -84,6 +84,7 @@ export default function CartPage() {
         <p>Your cart is empty.</p>
       ) : (
         <>
+          <div className="overflow-x-auto">
           <table className="min-w-full border-collapse mb-4">
             <thead>
               <tr className="bg-gray-200">
@@ -115,6 +116,7 @@ export default function CartPage() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="flex justify-end items-center mb-4">
             <span className="mr-4 font-bold">Total: ${totalPrice.toFixed(2)}</span>
             <button
