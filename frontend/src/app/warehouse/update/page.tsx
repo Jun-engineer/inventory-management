@@ -9,6 +9,7 @@ export default function WarehouseUpdate() {
   const [warehouseName, setWarehouseName] = useState("");
   const [location, setLocation] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch warehouse list for the dropdown.
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function WarehouseUpdate() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedWarehouseId) return;
+    setSubmitting(true);
     const data = { warehouse_name: warehouseName, location };
     try {
       const res = await fetch(`/api/warehouses/${selectedWarehouseId}/`, {
@@ -68,6 +70,8 @@ export default function WarehouseUpdate() {
     } catch (error) {
       console.error("Error updating warehouse:", error);
       setMessage("Error updating warehouse.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -116,12 +120,13 @@ export default function WarehouseUpdate() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            disabled={submitting}
+            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Update Warehouse
+            {submitting ? "Updating..." : "Update Warehouse"}
           </button>
           {message && (
-            <p className="mt-4 text-center text-green-600">{message}</p>
+            <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>
           )}
         </form>
       )}

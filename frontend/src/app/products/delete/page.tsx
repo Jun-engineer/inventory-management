@@ -13,6 +13,7 @@ export default function ProductDelete() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetch("/api/products/", { credentials: "include" })
@@ -29,6 +30,7 @@ export default function ProductDelete() {
   const handleDelete = async () => {
     if (!selectedProductId) return;
     if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+    setSubmitting(true);
     try {
       const res = await fetch(`/api/products/${selectedProductId}/`, {
         method: "DELETE",
@@ -45,6 +47,8 @@ export default function ProductDelete() {
     } catch (error) {
       console.error("Error deleting product:", error);
       setMessage("Error deleting product.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,11 +75,12 @@ export default function ProductDelete() {
       </div>
       <button
         onClick={handleDelete}
-        className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600"
+        disabled={submitting}
+        className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Delete Product
+        {submitting ? "Deleting..." : "Delete Product"}
       </button>
-      {message && <p className="mt-4 text-center text-green-600">{message}</p>}
+      {message && <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
     </div>
   );
 }

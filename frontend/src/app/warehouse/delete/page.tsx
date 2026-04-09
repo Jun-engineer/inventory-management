@@ -7,6 +7,7 @@ export default function DeleteWarehouse() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetch(`/api/warehouses/`, { credentials: "include" })
@@ -18,6 +19,7 @@ export default function DeleteWarehouse() {
   const handleDelete = async () => {
     if (!selectedWarehouseId) return;
     if (!confirm("Are you sure you want to delete this warehouse? This action cannot be undone.")) return;
+    setSubmitting(true);
     try {
       const res = await fetch(`/api/warehouses/${selectedWarehouseId}/`, {
         method: "DELETE",
@@ -34,6 +36,8 @@ export default function DeleteWarehouse() {
     } catch (error) {
       console.error("Error deleting warehouse:", error);
       setMessage("Error deleting warehouse.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -60,12 +64,13 @@ export default function DeleteWarehouse() {
       </div>
       <button
         onClick={handleDelete}
-        className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600"
+        disabled={submitting}
+        className="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Delete Warehouse
+        {submitting ? "Deleting..." : "Delete Warehouse"}
       </button>
       {message && (
-        <p className="mt-4 text-center text-green-600">{message}</p>
+        <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>
       )}
     </div>
   );

@@ -17,6 +17,7 @@ export default function ProductRegister() {
   const [newWarehouseLocation, setNewWarehouseLocation] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
   // Fetch warehouse list from backend
@@ -47,6 +48,7 @@ export default function ProductRegister() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
   
     let chosenWarehouseId = 0;
   
@@ -117,6 +119,8 @@ export default function ProductRegister() {
     } catch (error) {
       console.error("Error registering product:", error);
       setMessage("Error registering product.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -228,11 +232,12 @@ export default function ProductRegister() {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          disabled={submitting}
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Register Product
+          {submitting ? "Registering..." : "Register Product"}
         </button>
-        {message && <p className="mb-4 text-center">{message}</p>}
+        {message && <p className={`mb-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
       </form>
     </div>
   );

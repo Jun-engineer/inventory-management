@@ -27,6 +27,7 @@ export default function ProductUpdate() {
   // We'll store the warehouse name for display.
   const [warehouseDisplay, setWarehouseDisplay] = useState('');
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch products list
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function ProductUpdate() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     const data = {
       product_name: productName,
       sku, // sent for reference (though not editable)
@@ -84,6 +86,8 @@ export default function ProductUpdate() {
     } catch (error) {
       console.error('Error updating product:', error);
       setMessage('Error updating product.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -181,11 +185,12 @@ export default function ProductUpdate() {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          disabled={submitting}
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Update Product
+          {submitting ? "Updating..." : "Update Product"}
         </button>
-        {message && <p className="mt-4 text-center text-green-600">{message}</p>}
+        {message && <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
       </form>
     </div>
   );

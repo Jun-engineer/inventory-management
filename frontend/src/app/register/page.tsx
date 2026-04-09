@@ -12,10 +12,12 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
+    setSubmitting(true);
 
     const payload = {
       name: companyName,
@@ -45,6 +47,8 @@ export default function Register() {
     } catch (error) {
       console.error("Registration error:", error);
       setMessage("Registration failed");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -116,13 +120,14 @@ export default function Register() {
             <button
               type="submit"
               id="registerButton"
-              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-md transition"
+              disabled={submitting}
+              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Register
+              {submitting ? "Registering..." : "Register"}
             </button>
           </div>
         </form>
-        {message && <p className="mt-4 text-center">{message}</p>}
+        {message && <p className={`mt-4 text-center ${message.includes("successful") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
         <p className="mt-6 text-center">
           Already have an account?{" "}
           <Link href="/login">

@@ -6,9 +6,11 @@ export default function AddWarehouse() {
   const [warehouseName, setWarehouseName] = useState("");
   const [location, setLocation] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     const data = { warehouse_name: warehouseName, location };
     try {
       const res = await fetch("/api/warehouses/", {
@@ -28,6 +30,8 @@ export default function AddWarehouse() {
     } catch (error) {
       console.error("Error adding warehouse:", error);
       setMessage("Error adding warehouse.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -57,12 +61,13 @@ export default function AddWarehouse() {
         </div>
         <button
           type="submit"
-          className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+          disabled={submitting}
+          className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Register Warehouse
+          {submitting ? "Registering..." : "Register Warehouse"}
         </button>
         {message && (
-          <p className="mt-4 text-center text-green-600">{message}</p>
+          <p className={`mt-4 text-center ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>
         )}
       </form>
     </div>
