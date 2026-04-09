@@ -42,6 +42,8 @@ interface Order {
 export default function PurchasePage() {
   // Data states
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [orderMessage, setOrderMessage] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("cartItems");
@@ -65,7 +67,8 @@ export default function PurchasePage() {
     fetch("/api/purchase-products/", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => setProducts(data))
-      .catch((err) => console.error("Error fetching purchase products", err));
+      .catch((err) => console.error("Error fetching purchase products", err))
+      .finally(() => setLoading(false));
   }, []);
 
   // Persist cart updates in localStorage
@@ -147,6 +150,7 @@ export default function PurchasePage() {
 
   const handleOrder = async () => {
     if (cartItems.length === 0) return;
+    setOrderMessage("");
     const orderPayload = {
       items: cartItems.map((item) => ({
         product_id: item.product.id,
@@ -160,17 +164,18 @@ export default function PurchasePage() {
       credentials: "include",
     });
     if (res.ok) {
-      alert("Order placed successfully!");
+      setOrderMessage("Order placed successfully!");
       setCartItems([]);
       localStorage.removeItem("cartItems");
-      // Optionally refresh the order history:
+      // Refresh the order history.
       const ordersRes = await fetch("/api/orders/", { credentials: "include" });
       if (ordersRes.ok) {
         const orders = await ordersRes.json();
         setOrderHistory(orders);
       }
     } else {
-      alert("Failed to place order.");
+      const errData = await res.json().catch(() => null);
+      setOrderMessage(errData?.error || "Failed to place order.");
     }
   };
 
@@ -204,7 +209,8 @@ export default function PurchasePage() {
           )
         );
       } else {
-        alert("Failed to mark order as delivered.");
+        const errData = await res.json().catch(() => null);
+        setOrderMessage(errData?.error || "Failed to mark order as delivered.");
       }
     } catch (error) {
       console.error("Error marking order as delivered", error);
@@ -272,7 +278,17 @@ export default function PurchasePage() {
       label: "Purchase",
       content: (
         <div>
-          {/* Render product ordering table */}
+          {orderMessage && (
+            <p className={`mb-4 text-center font-medium ${orderMessage.includes("successfully") ? "text-green-600" : "text-red-500"}`}>
+              {orderMessage}
+            </p>
+          )}
+          {loading ? (
+            <p className="text-gray-500">Loading products...</p>
+          ) : sortedProducts.length === 0 ? (
+            <p className="text-gray-500">No products available for purchase. Send permission requests to sellers first.</p>
+          ) : (
+          /* Render product ordering table */
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="bg-gray-200">
@@ -344,6 +360,7 @@ export default function PurchasePage() {
               ))}
             </tbody>
           </table>
+          )}
           <div className="flex justify-end items-center my-4">
             <span className="mr-4 font-bold">
               Total: ${cartItems.reduce((t, i) => t + i.product.price * i.quantity, 0).toFixed(2)}
@@ -379,11 +396,12 @@ export default function PurchasePage() {
   // Manage the initial tab index from URL hash
   const [initialTab, setInitialTab] = useState(0);
   useEffect(() => {
+    const tabLabels = ["purchase", "cart", "working", "completed"];
     const updateTabFromHash = () => {
       if (window.location.hash) {
         const hash = window.location.hash.slice(1).replace(/\/$/, "").trim();
-        const index = tabs.findIndex(
-          (tab) => tab.label.toLowerCase() === hash.toLowerCase()
+        const index = tabLabels.findIndex(
+          (label) => label === hash.toLowerCase()
         );
         if (index !== -1) setInitialTab(index);
       }
@@ -391,7 +409,7 @@ export default function PurchasePage() {
     updateTabFromHash();
     window.addEventListener("hashchange", updateTabFromHash);
     return () => window.removeEventListener("hashchange", updateTabFromHash);
-  }, [tabs]);
+  }, []);
 
   return (
     <div className="p-6">

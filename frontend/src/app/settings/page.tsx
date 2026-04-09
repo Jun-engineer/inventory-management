@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Tabs, { Tab } from "../components/Tabs";
 
 interface CompanySettings {
@@ -242,20 +242,20 @@ export default function SettingsPage() {
     },
   ];
 
-  // Wrap updateTabFromHash so it’s stable:
-const updateTabFromHash = useCallback(() => {
-  if (window.location.hash) {
-    const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
-    const index = tabs.findIndex((tab) => tab.label.toLowerCase() === hash.toLowerCase());
-    if (index !== -1) setInitialTab(index);
-  }
-}, [tabs]);
+  const tabLabels = ["Profile", "Edit Profile", "Change Password"];
 
-useEffect(() => {
-  updateTabFromHash();
-  window.addEventListener("hashchange", updateTabFromHash);
-  return () => window.removeEventListener("hashchange", updateTabFromHash);
-}, [updateTabFromHash]);
+  useEffect(() => {
+    const updateTabFromHash = () => {
+      if (window.location.hash) {
+        const hash = window.location.hash.substring(1).replace(/\/$/, "").trim();
+        const index = tabLabels.findIndex((label) => label.toLowerCase() === hash.toLowerCase());
+        if (index !== -1) setInitialTab(index);
+      }
+    };
+    updateTabFromHash();
+    window.addEventListener("hashchange", updateTabFromHash);
+    return () => window.removeEventListener("hashchange", updateTabFromHash);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-6">

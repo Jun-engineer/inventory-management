@@ -18,12 +18,12 @@ export default function AddWarehouse() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        setMessage("Warehouse added successfully. Reloading page...");
+        setMessage("Warehouse added successfully.");
         setWarehouseName("");
         setLocation("");
-        setTimeout(() => window.location.reload(), 3000);
       } else {
-        setMessage("Error adding warehouse.");
+        const errData = await res.json();
+        setMessage(errData.error || "Error adding warehouse.");
       }
     } catch (error) {
       console.error("Error adding warehouse:", error);

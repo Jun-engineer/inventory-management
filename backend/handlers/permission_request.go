@@ -46,10 +46,26 @@ func SendPermissionRequestHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Prevent sending a request to yourself.
+		if seller.ID == requesterID {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You cannot send a permission request to yourself"})
+			return
+		}
+
 		// Look up the requester (customer) info from the Company table.
 		var requester models.Companies
 		if err := db.First(&requester, requesterID).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch requester info"})
+			return
+		}
+
+		// Check for duplicate request.
+		var existingCount int64
+		db.Model(&models.PermissionRequest{}).
+			Where("seller_id = ? AND requester_id = ? AND status IN ?", seller.ID, requesterID, []string{"pending", "permitted"}).
+			Count(&existingCount)
+		if existingCount > 0 {
+			c.JSON(http.StatusConflict, gin.H{"error": "A permission request already exists for this seller"})
 			return
 		}
 

@@ -1,4 +1,9 @@
-'use client';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service - Inventory Management System",
+  description: "Terms of Service for the Inventory Management System application.",
+};
 
 export default function TermsPage() {
   return (

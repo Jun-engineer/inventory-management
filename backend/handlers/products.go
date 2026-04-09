@@ -205,6 +205,18 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		currentCompanyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var req struct {
 			ProductName string  `json:"product_name"`
 			Sku         string  `json:"sku"`
@@ -225,6 +237,13 @@ func UpdateProductHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 			return
 		}
+
+		// Verify ownership.
+		if product.SupplierID != currentCompanyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only update your own products"})
+			return
+		}
+
 		product.ProductName = req.ProductName
 		product.Sku = req.Sku
 		product.Description = req.Description
@@ -263,11 +282,31 @@ func DeleteProductHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product id"})
 			return
 		}
+
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+		currentCompanyID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid company id"})
+			return
+		}
+
 		var product models.Products
 		if err := db.First(&product, productID).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 			return
 		}
+
+		// Verify ownership.
+		if product.SupplierID != currentCompanyID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "You can only delete your own products"})
+			return
+		}
+
 		if err := db.Delete(&product).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
 			return

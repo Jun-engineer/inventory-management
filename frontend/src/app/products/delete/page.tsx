@@ -28,14 +28,16 @@ export default function ProductDelete() {
 
   const handleDelete = async () => {
     if (!selectedProductId) return;
+    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
     try {
-      const res = await fetch(`/api/products/${selectedProductId}`, {
+      const res = await fetch(`/api/products/${selectedProductId}/`, {
         method: "DELETE",
         credentials: "include",
       });
       if (res.ok) {
-        setMessage("Product deleted successfully. Reloading page...");
-        setTimeout(() => window.location.reload(), 3000);
+        setMessage("Product deleted successfully.");
+        setProducts((prev) => prev.filter((p) => p.id !== selectedProductId));
+        setSelectedProductId(null);
       } else {
         const errData = await res.json();
         setMessage(errData.error || "Error deleting product.");

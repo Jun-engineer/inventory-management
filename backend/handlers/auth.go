@@ -20,13 +20,13 @@ import (
 func generateToken(user models.Companies) (string, error) {
 	secret := []byte(os.Getenv("JWT_SECRET"))
 	if len(secret) == 0 {
-		secret = []byte("your_jwt_secret") // fallback secret; replace in production
+		return "", errors.New("JWT_SECRET environment variable is not set")
 	}
 
 	claims := jwt.MapClaims{
 		"companyID": user.ID,
 		"email":     user.Email,
-		"exp":       time.Now().Add(72 * time.Hour).Unix(),
+		"exp":       time.Now().Add(8 * time.Hour).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(secret)
@@ -159,10 +159,10 @@ func ChangePasswordHandler(db *gorm.DB) gin.HandlerFunc {
 
 		var req struct {
 			OldPassword string `json:"oldPassword"`
-			NewPassword string `json:"newPassword"`
+			NewPassword string `json:"newPassword" binding:"required,min=8"`
 		}
 		if err := c.BindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "New password must be at least 8 characters"})
 			return
 		}
 

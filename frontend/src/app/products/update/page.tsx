@@ -72,11 +72,12 @@ export default function ProductUpdate() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        setMessage('Product updated successfully. Reloading page...');
-        // Reload the page after 3 seconds.
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        setMessage('Product updated successfully.');
+        // Refresh product list.
+        fetch("/api/products/", { credentials: 'include' })
+          .then((r) => r.json())
+          .then((data) => setProducts(data))
+          .catch(() => {});
       } else {
         setMessage('Error updating product.');
       }

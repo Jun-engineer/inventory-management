@@ -1,4 +1,9 @@
-'use client';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy - Inventory Management System",
+  description: "Privacy Policy for the Inventory Management System application.",
+};
 
 export default function PrivacyPage() {
   return (
@@ -40,7 +45,7 @@ export default function PrivacyPage() {
       </p>
       <h2 className="text-2xl font-bold mt-6">Contact Us</h2>
       <p className="mt-2">
-        If you have any questions about this Privacy Policy, please contact us through the App&APOS;s contact details.
+        If you have any questions about this Privacy Policy, please contact us through the App&apos;s contact details.
       </p>
     </div>
   );

@@ -53,8 +53,15 @@ export default function WarehouseUpdate() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        setMessage("Warehouse updated successfully. Reloading page...");
-        setTimeout(() => window.location.reload(), 3000);
+        setMessage("Warehouse updated successfully.");
+        // Refresh warehouse list.
+        fetch("/api/warehouses/", { credentials: "include" })
+          .then((r) => {
+            if (!r.ok) throw new Error("Failed");
+            return r.json();
+          })
+          .then((data) => setWarehouses(data))
+          .catch(() => {});
       } else {
         setMessage("Error updating warehouse.");
       }
