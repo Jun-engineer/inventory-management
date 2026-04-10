@@ -60,6 +60,14 @@ export default function Dashboard() {
   const netCompletedColor = netCompleted < 0 ? "text-red-500" : "text-green-500";
   const netPendingColor = netPending < 0 ? "text-red-500" : "text-green-500";
 
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-gray-500 text-lg">Loading...</p>
+      </div>
+    );
+  }
+
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center">

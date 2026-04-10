@@ -9,7 +9,7 @@ export default function Home() {
           <Link href="/login">
             <button
               id="signInButton"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-md transition"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition"
             >
               Sign In
             </button>
@@ -17,7 +17,7 @@ export default function Home() {
           <Link href="/register">
             <button
               id="signUpButton"
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-md transition"
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md transition"
             >
               Sign Up
             </button>

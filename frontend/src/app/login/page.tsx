@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // If the user is already logged in, redirect to the dashboard page.
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function LoginPage() {
   const handleCredentialsLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg("");
+    setSubmitting(true);
 
     const result = await signIn("credentials", {
       redirect: false,
@@ -36,6 +38,7 @@ export default function LoginPage() {
     } else if (result?.url) {
       router.push(result.url);
     }
+    setSubmitting(false);
   };
 
   /*
@@ -71,9 +74,10 @@ export default function LoginPage() {
           />
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-md transition"
+            disabled={submitting}
+            className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login with Email/Password
+            {submitting ? "Logging in..." : "Login with Email/Password"}
           </button>
           {errorMsg && <p className="text-center text-red-400">{errorMsg}</p>}
         </form>

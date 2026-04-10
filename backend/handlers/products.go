@@ -82,6 +82,18 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Get authenticated company id.
+		companyIDVal, exists := c.Get("companyID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
+			return
+		}
+		supplierID, ok := companyIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse company id"})
+			return
+		}
+
 		var warehouseID uint = req.WarehouseID
 		var warehouseRecord models.Warehouse
 		// If warehouse_id is 0, add a new warehouse.
@@ -93,6 +105,7 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 			newWarehouse := models.Warehouse{
 				WarehouseName: req.NewWarehouseName,
 				Location:      req.NewWarehouseLocation,
+				CompanyID:     supplierID,
 			}
 			if err := db.Create(&newWarehouse).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create new warehouse"})
@@ -106,18 +119,6 @@ func RegisterProductHandler(db *gorm.DB) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid warehouse id"})
 				return
 			}
-		}
-
-		// Get authenticated company id.
-		companyIDVal, exists := c.Get("companyID")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
-			return
-		}
-		supplierID, ok := companyIDVal.(uint)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse company id"})
-			return
 		}
 
 		// Count existing products in this warehouse.

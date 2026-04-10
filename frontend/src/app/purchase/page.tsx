@@ -46,8 +46,12 @@ export default function PurchasePage() {
   const [orderMessage, setOrderMessage] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("cartItems");
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = localStorage.getItem("cartItems");
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
     }
     return [];
   });

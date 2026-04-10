@@ -5,9 +5,11 @@ import { useState } from "react";
 export default function SendRequest() {
   const [sellerEmail, setSellerEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const res = await fetch("/api/requests/", {
         method: "POST",
@@ -25,6 +27,8 @@ export default function SendRequest() {
     } catch (err) {
       console.error(err);
       setMessage("An error occurred.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -42,11 +46,11 @@ export default function SendRequest() {
             required
           />
         </div>
-        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
-          Send Request
+        <button type="submit" disabled={submitting} className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">
+          {submitting ? "Sending..." : "Send Request"}
         </button>
       </form>
-      {message && <p className="mt-4">{message}</p>}
+      {message && <p className={`mt-4 ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
     </div>
   );
 }

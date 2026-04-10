@@ -5,7 +5,7 @@ import Header from "./Header";
 
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className="flex-grow">
       <Header />
       <main className="py-8">{children}</main>
     </div>

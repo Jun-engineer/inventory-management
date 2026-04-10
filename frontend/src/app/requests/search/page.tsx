@@ -81,11 +81,12 @@ export default function PermissionSearch() {
         </div>
         <button
           onClick={handleSearch}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           Search
         </button>
       </div>
+      {message && <p className={`mt-4 ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>{message}</p>}
       <div className="mt-4">
         {searched && results.length === 0 ? (
           <p>No matching permission requests.</p>
@@ -109,7 +110,6 @@ export default function PermissionSearch() {
           </ul>
         )}
       </div>
-      {message && <p className="mt-4">{message}</p>}
     </div>
   );
 }

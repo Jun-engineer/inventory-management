@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -21,7 +20,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Get the JWT token from cookie.
 		cookie, err := c.Request.Cookie("next-auth.session-token")
 		if err != nil || cookie.Value == "" {
-			fmt.Println("Cookie retrieval error:", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
 			c.Abort()
 			return
@@ -38,7 +36,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			fmt.Println("Token parse error:", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return

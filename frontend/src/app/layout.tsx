@@ -34,15 +34,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
+      <body className="min-h-screen bg-white text-black">
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5434162081070782"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-      </head>
-      <body className="min-h-screen bg-white text-black">
         <Providers>
           <MenuProvider>
             <div className="max-w-5xl mx-auto p-6 flex flex-col min-h-screen">
